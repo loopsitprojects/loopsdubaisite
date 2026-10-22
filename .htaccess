@@ -1,10 +1,14 @@
+DirectoryIndex public/index.php index.php
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    Options -Indexes
 
     # Block direct access to sensitive files
     RewriteRule ^\.(env|git) - [F,L,NC]
 
     # Route requests through public folder
+    RewriteCond %{REQUEST_URI} !^/loopsdubai/public/
     RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
