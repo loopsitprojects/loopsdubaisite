@@ -1,9 +1,12 @@
+DirectoryIndex index.php index.html
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
+    RewriteBase /loopsdubai/
 
     # Prevent direct access to sensitive files
     RewriteRule ^(\.env|\.git) - [F,L,NC]
@@ -12,21 +15,11 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    # If physical file or directory exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
-    # If requested file exists in public/, rewrite to public/
-    RewriteCond %{REQUEST_URI} !^/loopsdubai/public/
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteCond %{DOCUMENT_ROOT}/loopsdubai/public/$1 -f [OR]
-    RewriteCond %{DOCUMENT_ROOT}/public_html/uat.loopsintegrated.co/loopsdubai/public/$1 -f [OR]
-    RewriteCond %{DOCUMENT_ROOT}/uat.loopsintegrated.co/loopsdubai/public/$1 -f
-    RewriteRule ^(.*)$ public/$1 [L]
-
-    # Send Requests To Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
+    # Send all other requests to front controller
     RewriteRule ^ index.php [L]
 </IfModule>
