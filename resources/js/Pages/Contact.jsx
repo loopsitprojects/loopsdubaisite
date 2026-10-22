@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, useForm, usePage, Link } from '@inertiajs/react';
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
+import { appUrl } from '../utils/url';
 import { 
     Clock, 
     Mail, 
@@ -34,7 +35,7 @@ export default function Contact({ contactSetting }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/book-call', {
+        post(appUrl('/book-call'), {
             preserveScroll: true,
             onSuccess: () => {
                 setSubmitted(true);
@@ -161,7 +162,7 @@ export default function Contact({ contactSetting }) {
                                                 Send Another Message
                                             </button>
                                             <Link
-                                                href="/work"
+                                                href={appUrl('/work')}
                                                 className="px-6 py-2.5 rounded-full bg-[#14f1d9] text-black text-xs font-bold hover:bg-[#12dac4] transition shadow-[0_0_15px_rgba(20,241,217,0.3)]"
                                             >
                                                 Explore Curated Films →

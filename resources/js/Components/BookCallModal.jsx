@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { X, CheckCircle, Sparkles, Loader2, Calendar } from 'lucide-react';
+import { appUrl } from '../utils/url';
 
 export default function BookCallModal({ isOpen, onClose }) {
     const [submitted, setSubmitted] = useState(false);
@@ -18,7 +19,7 @@ export default function BookCallModal({ isOpen, onClose }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/book-call', {
+        post(appUrl('/book-call'), {
             preserveScroll: true,
             onSuccess: () => {
                 setSubmitted(true);

@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="app-url" content="{{ url('/') }}">
         <title inertia>{{ config('app.name', 'Loops Integrated') }}</title>
         <meta name="description" content="AI video production with human creative direction. Production accelerated by AI. Made for global brands.">
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import { Play, ArrowRight } from 'lucide-react';
 import { getFilmThumbnail, isDirectVideo } from '../utils/video';
+import { appUrl } from '../utils/url';
 
 export default function FeaturedFilms({ portfolio, onFilmClick, onEnterCreativeWorld }) {
     // Default fallback films matching the exact screenshot layout
@@ -64,7 +65,7 @@ export default function FeaturedFilms({ portfolio, onFilmClick, onEnterCreativeW
                     {/* Right CTA Button: "Enter our AI creative world →" */}
                     <div className="shrink-0">
                         <Link
-                            href="/work"
+                            href={appUrl('/work')}
                             className="cursor-pointer inline-flex items-center gap-2 bg-[#14f1d9] hover:bg-[#12dac4] text-black font-semibold text-xs sm:text-sm px-6 py-3.5 rounded-full transition-all duration-200 shadow-[0_0_24px_rgba(20,241,217,0.25)] hover:scale-[1.02] active:scale-[0.98]"
                         >
                             <span>Enter our AI creative world</span>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { Lock, Mail, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
+import { appUrl } from '../../utils/url';
 
 export default function Login() {
     const { props } = usePage();
@@ -13,7 +14,7 @@ export default function Login() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/admin/login');
+        post(appUrl('/admin/login'));
     };
 
     const fillDemoAdmin = () => {
@@ -32,7 +33,7 @@ export default function Login() {
                 {/* Back to website */}
                 <div className="mb-6">
                     <Link
-                        href="/"
+                        href={appUrl('/')}
                         className="inline-flex items-center gap-2 text-xs text-neutral-400 hover:text-white transition"
                     >
                         <ArrowLeft size={14} />

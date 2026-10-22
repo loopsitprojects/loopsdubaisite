@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import { appUrl } from '../utils/url';
 
 export default function Footer({ onContactClick }) {
     const { props } = usePage();
@@ -11,7 +12,7 @@ export default function Footer({ onContactClick }) {
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                     {/* Left Branding */}
                     <div className="space-y-2">
-                        <Link href="/" className="inline-block focus:outline-none group">
+                        <Link href={appUrl('/')} className="inline-block focus:outline-none group">
                             {company?.logo_type === 'image' && company?.logo_image_url ? (
                                 <img 
                                     src={company.logo_image_url} 
@@ -32,31 +33,31 @@ export default function Footer({ onContactClick }) {
                     {/* Right Horizontal Navigation Links */}
                     <nav className="flex flex-wrap items-center gap-6 sm:gap-8 lg:gap-10 text-xs sm:text-sm pt-1 md:pt-1">
                         <a
-                            href="#work"
+                            href={appUrl('/#work')}
                             className="text-neutral-300 hover:text-white transition-colors duration-200"
                         >
                             Work
                         </a>
                         <a
-                            href="#how-it-works"
+                            href={appUrl('/#how-it-works')}
                             className="text-neutral-300 hover:text-white transition-colors duration-200"
                         >
                             How it works
                         </a>
                         <a
-                            href="#about"
+                            href={appUrl('/#about')}
                             className="text-neutral-300 hover:text-white transition-colors duration-200"
                         >
                             About
                         </a>
                         <a
-                            href="#services"
+                            href={appUrl('/#services')}
                             className="text-neutral-300 hover:text-white transition-colors duration-200"
                         >
                             Our other services
                         </a>
                         <Link
-                            href="/contact"
+                            href={appUrl('/contact')}
                             className="cursor-pointer text-neutral-300 hover:text-white transition-colors duration-200"
                         >
                             Contact

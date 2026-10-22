@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Head, useForm, usePage, Link, router } from '@inertiajs/react';
+import { appUrl } from '../../utils/url';
 import { 
     LayoutDashboard, 
     Sliders, 
@@ -832,7 +833,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                         </div>
 
                         <Link
-                            href="/"
+                            href={appUrl('/')}
                             target="_blank"
                             className="w-full px-3.5 py-2.5 rounded-xl text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition flex items-center justify-between group"
                         >
@@ -841,7 +842,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                         </Link>
 
                         <Link
-                            href="/work"
+                            href={appUrl('/work')}
                             target="_blank"
                             className="w-full px-3.5 py-2.5 rounded-xl text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition flex items-center justify-between group"
                         >
@@ -850,7 +851,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                         </Link>
 
                         <Link
-                            href="/contact"
+                            href={appUrl('/contact')}
                             target="_blank"
                             className="w-full px-3.5 py-2.5 rounded-xl text-xs text-neutral-400 hover:text-white hover:bg-white/[0.04] transition flex items-center justify-between group"
                         >
@@ -2720,7 +2721,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                 </div>
 
                                 <Link
-                                    href="/contact"
+                                    href={appUrl('/contact')}
                                     target="_blank"
                                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/10 transition self-start sm:self-auto"
                                 >
