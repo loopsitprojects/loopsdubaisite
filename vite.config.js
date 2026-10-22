@@ -3,7 +3,8 @@ import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+    base: command === 'build' ? '/loopsdubai/build/' : '',
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.jsx'],
@@ -17,4 +18,4 @@ export default defineConfig({
             ignored: ['**/storage/framework/views/**'],
         },
     },
-});
+}));
