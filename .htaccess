@@ -1,25 +1,26 @@
-DirectoryIndex index.php index.html
-
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
     RewriteEngine On
-    RewriteBase /loopsdubai/
 
-    # Prevent direct access to sensitive files
-    RewriteRule ^(\.env|\.git) - [F,L,NC]
+    # Prevent direct HTTP access to internal framework directories
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)(\/|$) - [F,L,NC]
 
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    # Block access to hidden or sensitive files
+    RewriteRule (^|/)\.(?!well-known) - [F,L]
+    RewriteRule \.(env|json|lock|sql|md|yml|yaml|xml|bak|swp)$ - [F,L,NC]
 
-    # If physical file or directory exists, serve it directly
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
-
-    # Send all other requests to front controller
-    RewriteRule ^ index.php [L]
+    # Rewrite all traffic into the public/ directory front controller
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_URI} !^/loopsdubai/public/
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
+
+# Fallback directory protection
+<FilesMatch "(\.env|\.sql|\.json|\.lock|\.md|\.log)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
