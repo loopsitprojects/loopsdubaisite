@@ -1,4 +1,5 @@
 import React from 'react';
+import { appUrl } from '../utils/url';
 
 export default function CreatedFor({ logos }) {
     // Default to 6 items if not provided or empty
@@ -31,7 +32,7 @@ export default function CreatedFor({ logos }) {
                             >
                                 {item.logo_url ? (
                                     <img
-                                        src={item.logo_url}
+                                        src={appUrl(item.logo_url)}
                                         alt={item.name}
                                         className="max-h-8 max-w-[80%] object-contain filter grayscale group-hover:grayscale-0 opacity-70 group-hover:opacity-100 transition"
                                     />

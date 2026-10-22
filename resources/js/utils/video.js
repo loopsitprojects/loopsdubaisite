@@ -1,3 +1,5 @@
+import { appUrl } from './url';
+
 /**
  * Utility functions for video parsing and thumbnail extraction.
  */
@@ -56,12 +58,15 @@ export function getFilmThumbnail(film) {
     // 1. If user uploaded a custom thumbnail file or provided a custom local/data image
     if (film.thumbnail_url && typeof film.thumbnail_url === 'string') {
         const trimmed = film.thumbnail_url.trim();
-        if (trimmed.startsWith('/uploads/') || trimmed.startsWith('/storage/') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+        if (trimmed.startsWith('/uploads/') || trimmed.startsWith('/storage/')) {
+            return appUrl(trimmed);
+        }
+        if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
             return trimmed;
         }
         // If it's a custom URL and not the stock Unsplash placeholder, return it
         if (!trimmed.includes('unsplash.com') && trimmed !== '') {
-            return trimmed;
+            return appUrl(trimmed);
         }
     }
 
@@ -74,5 +79,5 @@ export function getFilmThumbnail(film) {
     }
 
     // 3. Fallback to existing thumbnail_url (even if placeholder) or null
-    return film.thumbnail_url || null;
+    return film.thumbnail_url ? appUrl(film.thumbnail_url) : null;
 }

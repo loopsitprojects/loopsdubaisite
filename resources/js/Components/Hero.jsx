@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, VolumeX, Play, Sparkles } from 'lucide-react';
+import { appUrl } from '../utils/url';
 
 export default function Hero({ hero, onBookCall, onWatchWork }) {
     const [isMuted, setIsMuted] = useState(true);
@@ -32,7 +33,7 @@ export default function Hero({ hero, onBookCall, onWatchWork }) {
                     className="w-full h-full object-cover filter brightness-[0.7] contrast-[1.1]"
                 >
                     <source
-                        src={hero?.reel_video_url || 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4'}
+                        src={hero?.reel_video_url ? appUrl(hero.reel_video_url) : 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4'}
                         type="video/mp4"
                     />
                 </video>

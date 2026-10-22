@@ -17,7 +17,7 @@ export default function Header({ onBookCall, activePage }) {
                 <Link href={appUrl('/')} className="group flex items-center gap-1.5 text-xl font-bold tracking-tight text-white focus:outline-none">
                     {company?.logo_type === 'image' && company?.logo_image_url ? (
                         <img 
-                            src={company.logo_image_url} 
+                            src={appUrl(company.logo_image_url)} 
                             alt={company.company_name || 'Logo'} 
                             className="h-10 sm:h-12 w-auto max-w-[200px] object-contain group-hover:opacity-90 transition" 
                         />

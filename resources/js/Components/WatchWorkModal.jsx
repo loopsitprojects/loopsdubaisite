@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { X, Play, Film, Sparkles } from 'lucide-react';
 import { parseVideoUrl } from '../utils/video';
+import { appUrl } from '../utils/url';
 
 export default function WatchWorkModal({ isOpen, onClose, onBookCall, videoUrl }) {
     const videoRef = useRef(null);
@@ -60,7 +61,7 @@ export default function WatchWorkModal({ isOpen, onClose, onBookCall, videoUrl }
                             autoPlay
                             playsInline
                             className="w-full h-full object-cover"
-                            src={videoUrl || 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4'}
+                            src={videoUrl ? appUrl(videoUrl) : 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4'}
                         />
                     )}
                 </div>

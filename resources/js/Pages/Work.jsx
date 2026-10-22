@@ -8,6 +8,7 @@ import BookCallModal from '../Components/BookCallModal';
 import WatchWorkModal from '../Components/WatchWorkModal';
 import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getFilmThumbnail, isDirectVideo } from '../utils/video';
+import { appUrl } from '../utils/url';
 
 export default function Work({ portfolio, workSetting }) {
     const { flash } = usePage().props;
@@ -16,86 +17,88 @@ export default function Work({ portfolio, workSetting }) {
     const [selectedFilm, setSelectedFilm] = useState(null);
     const [selectedSector, setSelectedSector] = useState('All');
 
-    // Curated Films fallback matching the exact screenshot layout
+    // Real Curated Films matching database
     const films = portfolio && portfolio.length > 0 ? portfolio : [
-        // Row 1: Real estate
         {
             id: 1,
-            title: '[Brand name 1]',
-            film_subtitle: '[Film title] · Created for [Brand]',
-            category: 'Real estate',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-traffic-at-night-41551-large.mp4',
+            title: 'Asian Paints Causeway — Royal Infinity | Film by Loops Integrated',
+            film_subtitle: "We created this commercial film for Asian Paints Causeway's Royal Infinity paint, showcased at a special event celebrating a life shaped by personal expression and refined taste.",
+            category: 'Consumer',
+            duration: '[1:21]',
+            thumbnail_url: 'https://img.youtube.com/vi/NZBRpXRW4V0/maxresdefault.jpg',
+            video_url: 'https://www.youtube.com/watch?v=NZBRpXRW4V0&list=PLbgYKilHGIbE',
         },
         {
             id: 2,
-            title: '[Brand name 2]',
-            film_subtitle: '[Film title] · Created for [Brand]',
+            title: 'Elyndra Life | Belong Beautifully | Brand Film by Loops Integrated',
+            film_subtitle: 'Belong beautifully.We produced this brand film for Elyndra Life, capturing a sense of belonging found in a place of rare beauty near Yala.',
             category: 'Real estate',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-modern-city-at-sunset-41553-large.mp4',
+            duration: '[1:47]',
+            thumbnail_url: 'https://img.youtube.com/vi/MfDawFyD2H0/maxresdefault.jpg',
+            video_url: 'https://youtu.be/MfDawFyD2H0?si=e5Gx4xoXKbBKl8ji',
         },
-
-        // Row 2: Consumer
         {
             id: 3,
-            title: '[Brand name 1]',
-            film_subtitle: '[Film title] · Created for [Brand]',
+            title: 'Moov | Animated Film by Loops Integrated',
+            film_subtitle: 'We created this 15-second animated film for Moov, following a cricket moment where their pain relief spray keeps players moving through the game, without missing a beat.',
             category: 'Consumer',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4',
+            duration: '[0:19]',
+            thumbnail_url: 'https://img.youtube.com/vi/dfgQZC8rrpI/maxresdefault.jpg',
+            video_url: 'https://youtu.be/dfgQZC8rrpI?si=SyVPSp0zX6Xle4Se',
         },
         {
             id: 4,
-            title: '[Brand name 2]',
-            film_subtitle: '[Film title] · Created for [Brand]',
+            title: 'Moov',
+            film_subtitle: 'We created this 15-second animated film for Moov, following a gym moment where their pain relief spray keeps you moving through your workout, without missing a beat.',
             category: 'Consumer',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-modern-smartphone-41485-large.mp4',
+            duration: '[0:19]',
+            thumbnail_url: 'https://img.youtube.com/vi/3i8EHmXjVGE/maxresdefault.jpg',
+            video_url: 'https://youtu.be/3i8EHmXjVGE?si=rkKs1yfQCic3lT6J',
         },
-
-        // Row 3: Tech
         {
             id: 5,
-            title: '[Brand name 1]',
-            film_subtitle: '[Film title] · Created for [Brand]',
+            title: 'Moov',
+            film_subtitle: 'We created this 15-second animated film for Moov, following a futsal moment where their pain relief spray keeps players moving through the game, without missing a beat.',
             category: 'Tech',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-with-flying-cars-41135-large.mp4',
+            duration: '[0:19]',
+            thumbnail_url: 'https://img.youtube.com/vi/SCvM_xxix04/maxresdefault.jpg',
+            video_url: 'https://youtu.be/SCvM_xxix04?si=PqV8-eRO3Wc92SjD',
         },
         {
             id: 6,
-            title: '[Brand name 2]',
-            film_subtitle: '[Film title] · Created for [Brand]',
+            title: 'LilyLanka | AI Film by Loops Integrated',
+            film_subtitle: "We created this AI-produced film for LilyLanka, showcasing the beauty of Sri Lanka's destinations and experiences for tourism.",
             category: 'Tech',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-41441-large.mp4',
+            duration: '[1:30]',
+            thumbnail_url: 'https://img.youtube.com/vi/ZJ3pMniorko/maxresdefault.jpg',
+            video_url: 'https://youtu.be/ZJ3pMniorko?si=Mc8P32w8epy6Whf7',
         },
-
-        // Row 4: Auto
         {
             id: 7,
-            title: '[Brand name 1]',
-            film_subtitle: '[Film title] · Created for [Brand]',
+            title: 'Elephant House Wonder | Ice Cream Day Special by Loops Integrated',
+            film_subtitle: 'TV commercial produced by Loops Integrated for Elephant House Wonder ice cream, celebrating Ice Cream Day',
             category: 'Auto',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-sports-car-driving-on-a-road-in-the-city-at-night-42861-large.mp4',
+            duration: '[1:36]',
+            thumbnail_url: 'https://img.youtube.com/vi/hL_OjUWdDRg/maxresdefault.jpg',
+            video_url: 'https://youtu.be/hL_OjUWdDRg?si=jJeG3L8NY5OGMo90',
         },
         {
             id: 8,
-            title: '[Brand name 2]',
-            film_subtitle: '[Film title] · Created for [Brand]',
+            title: 'Elephant House "Wonder Blast" | Fully AI Produced Film by Loops Integrated',
+            film_subtitle: 'We created this fully AI-produced video for Elephant House Wonder Blast ice cream generated from concept to final frame using AI video production, bringing the fun and flavor of Wonder Blast to life.',
             category: 'Auto',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-night-city-street-with-neon-lights-41134-large.mp4',
+            duration: '[0:34]',
+            thumbnail_url: 'https://img.youtube.com/vi/0YRnuCGvyR4/maxresdefault.jpg',
+            video_url: 'https://youtu.be/0YRnuCGvyR4?si=tOB9pNd1yoZ7y0it',
+        },
+        {
+            id: 9,
+            title: 'Yamaha FZS V5 | Fully AI Produced Film by Loops Integrated',
+            film_subtitle: "We created this fully AI produced video for the Yamaha FZS V5, generated from concept to final frame using AI video production showcasing the bike's design, power, and performance in a bold new way.",
+            category: 'Real estate',
+            duration: '[1:12]',
+            thumbnail_url: 'https://img.youtube.com/vi/5MZuArhqgAg/maxresdefault.jpg',
+            video_url: 'https://youtu.be/5MZuArhqgAg?si=4srDSZGo-OSfuh77',
         },
     ];
 
@@ -282,7 +285,7 @@ export default function Work({ portfolio, workSetting }) {
                                                             className={`w-full h-full object-cover filter brightness-[0.7] group-hover:brightness-[0.85] group-hover:scale-105 transition-all duration-500 ${
                                                                 thumb ? 'relative z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300' : ''
                                                             }`}
-                                                            src={film.video_url}
+                                                            src={appUrl(film.video_url)}
                                                         />
                                                     )}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none z-10" />

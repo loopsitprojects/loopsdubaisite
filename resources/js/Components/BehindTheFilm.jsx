@@ -1,4 +1,5 @@
 import React from 'react';
+import { appUrl } from '../utils/url';
 
 export default function BehindTheFilm({ setting }) {
     const tag = setting?.tag || 'BEHIND THE FILM';
@@ -35,7 +36,7 @@ export default function BehindTheFilm({ setting }) {
                         <div className="relative w-full aspect-[16/10] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] group-hover:bg-white/[0.04] group-hover:border-white/30 flex items-center justify-center transition-all duration-300 overflow-hidden">
                             {conceptImage ? (
                                 <img
-                                    src={conceptImage}
+                                    src={appUrl(conceptImage)}
                                     alt={conceptLabel}
                                     className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
                                     loading="lazy"
@@ -59,7 +60,7 @@ export default function BehindTheFilm({ setting }) {
                         <div className="relative w-full aspect-[16/10] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] group-hover:bg-white/[0.04] group-hover:border-white/30 flex items-center justify-center transition-all duration-300 overflow-hidden">
                             {finishImage ? (
                                 <img
-                                    src={finishImage}
+                                    src={appUrl(finishImage)}
                                     alt={finishLabel}
                                     className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
                                     loading="lazy"

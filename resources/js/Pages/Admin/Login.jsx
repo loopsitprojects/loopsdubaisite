@@ -46,7 +46,7 @@ export default function Login() {
                         {company?.logo_type === 'image' && company?.logo_image_url ? (
                             <div className="flex justify-center mb-3">
                                 <img 
-                                    src={company.logo_image_url} 
+                                    src={appUrl(company.logo_image_url)} 
                                     alt={company.company_name || 'Loops Integrated'} 
                                     className="h-12 w-auto max-w-[200px] object-contain" 
                                 />

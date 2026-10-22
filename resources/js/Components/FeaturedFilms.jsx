@@ -5,43 +5,43 @@ import { getFilmThumbnail, isDirectVideo } from '../utils/video';
 import { appUrl } from '../utils/url';
 
 export default function FeaturedFilms({ portfolio, onFilmClick, onEnterCreativeWorld }) {
-    // Default fallback films matching the exact screenshot layout
+    // Default fallback films matching real database films
     const films = portfolio && portfolio.length > 0 ? portfolio : [
         {
             id: 1,
-            title: '[Brand name]',
-            film_subtitle: '[Film title] · Created for [Brand]',
-            category: 'Auto',
-            duration: '[0:45]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-sports-car-driving-on-a-road-in-the-city-at-night-42861-large.mp4',
+            title: 'Asian Paints Causeway — Royal Infinity | Film by Loops Integrated',
+            film_subtitle: "We created this commercial film for Asian Paints Causeway's Royal Infinity paint, showcased at a special event celebrating a life shaped by personal expression and refined taste.",
+            category: 'Consumer',
+            duration: '[1:21]',
+            thumbnail_url: 'https://img.youtube.com/vi/NZBRpXRW4V0/maxresdefault.jpg',
+            video_url: 'https://www.youtube.com/watch?v=NZBRpXRW4V0&list=PLbgYKilHGIbE',
         },
         {
             id: 2,
-            title: '[Brand name]',
-            film_subtitle: '[Film title] · Created for [Brand]',
-            category: 'Consumer',
-            duration: '[0:20]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4',
+            title: 'Elyndra Life | Belong Beautifully | Brand Film by Loops Integrated',
+            film_subtitle: 'Belong beautifully.We produced this brand film for Elyndra Life, capturing a sense of belonging found in a place of rare beauty near Yala.',
+            category: 'Real estate',
+            duration: '[1:47]',
+            thumbnail_url: 'https://img.youtube.com/vi/MfDawFyD2H0/maxresdefault.jpg',
+            video_url: 'https://youtu.be/MfDawFyD2H0?si=e5Gx4xoXKbBKl8ji',
         },
         {
             id: 3,
-            title: '[Brand name]',
-            film_subtitle: '[Film title] · Created for [Brand]',
-            category: 'Tech',
-            duration: '[1:00]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-futuristic-city-with-flying-cars-41135-large.mp4',
+            title: 'Moov | Animated Film by Loops Integrated',
+            film_subtitle: 'We created this 15-second animated film for Moov, following a cricket moment where their pain relief spray keeps players moving through the game, without missing a beat.',
+            category: 'Consumer',
+            duration: '[0:19]',
+            thumbnail_url: 'https://img.youtube.com/vi/dfgQZC8rrpI/maxresdefault.jpg',
+            video_url: 'https://youtu.be/dfgQZC8rrpI?si=SyVPSp0zX6Xle4Se',
         },
         {
-            id: 4,
-            title: '[Brand name]',
-            film_subtitle: '[Film title] · Created for [Brand]',
-            category: 'Real estate',
-            duration: '[0:15]',
-            thumbnail_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-traffic-at-night-41551-large.mp4',
+            id: 6,
+            title: 'LilyLanka | AI Film by Loops Integrated',
+            film_subtitle: "We created this AI-produced film for LilyLanka, showcasing the beauty of Sri Lanka's destinations and experiences for tourism.",
+            category: 'Tech',
+            duration: '[1:30]',
+            thumbnail_url: 'https://img.youtube.com/vi/ZJ3pMniorko/maxresdefault.jpg',
+            video_url: 'https://youtu.be/ZJ3pMniorko?si=Mc8P32w8epy6Whf7',
         },
     ];
 
@@ -114,7 +114,7 @@ export default function FeaturedFilms({ portfolio, onFilmClick, onEnterCreativeW
                                                 className={`w-full h-full object-cover filter brightness-[0.7] group-hover:brightness-[0.85] group-hover:scale-105 transition-all duration-500 ${
                                                     thumb ? 'relative z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300' : ''
                                                 }`}
-                                                src={film.video_url}
+                                                src={appUrl(film.video_url)}
                                             />
                                         )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none z-10" />

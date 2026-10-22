@@ -1,4 +1,5 @@
 import React from 'react';
+import { appUrl } from '../utils/url';
 
 export default function About({ about, teamMembers }) {
     const tag = about?.tag || 'ABOUT';
@@ -44,7 +45,7 @@ export default function About({ about, teamMembers }) {
                                     <div className="w-full aspect-[4/5] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] group-hover:bg-white/[0.04] group-hover:border-white/30 flex items-center justify-center transition-all duration-300 p-4 overflow-hidden">
                                         {member.photo_url ? (
                                             <img
-                                                src={member.photo_url}
+                                                src={appUrl(member.photo_url)}
                                                 alt={member.name || '[Name]'}
                                                 className="w-full h-full object-cover rounded-xl filter grayscale group-hover:grayscale-0 group-hover:scale-105 transition duration-500"
                                                 loading="lazy"

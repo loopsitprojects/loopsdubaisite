@@ -700,7 +700,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                             <div>
                                 <div className="text-base font-black tracking-tight text-white leading-none">
                                     {companyForm.data.logo_type === 'image' && (logoFilePreview || companyForm.data.logo_image_url) ? (
-                                        <img src={logoFilePreview || companyForm.data.logo_image_url} alt="Logo" className="h-7 max-w-[130px] object-contain" />
+                                        <img src={logoFilePreview || appUrl(companyForm.data.logo_image_url)} alt="Logo" className="h-7 max-w-[130px] object-contain" />
                                     ) : (
                                         <>
                                             {companyForm.data.logo_text_prefix || 'Loops'}{' '}
@@ -1401,7 +1401,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                     <div className="w-full aspect-[16/10] rounded-xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-4 overflow-hidden relative">
                                                         {conceptFilePreview || behindForm.data.concept_image_url ? (
                                                             <img
-                                                                src={conceptFilePreview || behindForm.data.concept_image_url}
+                                                                src={conceptFilePreview || appUrl(behindForm.data.concept_image_url)}
                                                                 alt="Concept Preview"
                                                                 className="w-full h-full object-cover rounded-lg"
                                                             />
@@ -1521,7 +1521,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                     <div className="w-full aspect-[16/10] rounded-xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-4 overflow-hidden relative">
                                                         {finishFilePreview || behindForm.data.finish_image_url ? (
                                                             <img
-                                                                src={finishFilePreview || behindForm.data.finish_image_url}
+                                                                src={finishFilePreview || appUrl(behindForm.data.finish_image_url)}
                                                                 alt="Finish Preview"
                                                                 className="w-full h-full object-cover rounded-lg"
                                                             />
@@ -1569,7 +1569,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                     <div className="w-full aspect-[16/10] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-6 overflow-hidden">
                                                         {conceptFilePreview || behindForm.data.concept_image_url ? (
                                                             <img
-                                                                src={conceptFilePreview || behindForm.data.concept_image_url}
+                                                                src={conceptFilePreview || appUrl(behindForm.data.concept_image_url)}
                                                                 alt="Concept"
                                                                 className="w-full h-full object-cover rounded-xl"
                                                             />
@@ -1588,7 +1588,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                     <div className="w-full aspect-[16/10] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-6 overflow-hidden">
                                                         {finishFilePreview || behindForm.data.finish_image_url ? (
                                                             <img
-                                                                src={finishFilePreview || behindForm.data.finish_image_url}
+                                                                src={finishFilePreview || appUrl(behindForm.data.finish_image_url)}
                                                                 alt="Finished"
                                                                 className="w-full h-full object-cover rounded-xl"
                                                             />
@@ -1790,7 +1790,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                             <div className="w-full aspect-[4/5] rounded-xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center overflow-hidden mb-3.5 relative">
                                                                 {member.photo_url ? (
                                                                     <img
-                                                                        src={member.photo_url}
+                                                                        src={appUrl(member.photo_url)}
                                                                         alt={member.name}
                                                                         className="w-full h-full object-cover rounded-lg filter grayscale group-hover:grayscale-0 transition-all duration-300"
                                                                     />
@@ -1880,7 +1880,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                             <div className="w-full aspect-[4/5] rounded-xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-3 overflow-hidden">
                                                                 {member.photo_url ? (
                                                                     <img
-                                                                        src={member.photo_url}
+                                                                        src={appUrl(member.photo_url)}
                                                                         alt={member.name}
                                                                         className="w-full h-full object-cover rounded-lg filter grayscale"
                                                                     />
@@ -2584,7 +2584,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                         )}
                                                         {isDirectVideo(film.video_url) && (
                                                             <video
-                                                                src={film.video_url}
+                                                                src={appUrl(film.video_url)}
                                                                 muted
                                                                 loop
                                                                 playsInline
@@ -3299,7 +3299,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                         <div className="flex items-center gap-1.5 text-xl font-bold tracking-tight text-white">
                                             {companyForm.data.logo_type === 'image' && (logoFilePreview || companyForm.data.logo_image_url) ? (
                                                 <img 
-                                                    src={logoFilePreview || companyForm.data.logo_image_url} 
+                                                    src={logoFilePreview || appUrl(companyForm.data.logo_image_url)} 
                                                     alt="Logo Preview" 
                                                     className="h-8 max-w-[200px] object-contain"
                                                     onError={(e) => {
@@ -3421,7 +3421,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                         <div className="flex items-center gap-4">
                                                             <div className="w-16 h-14 rounded-lg bg-[#08090c] border border-white/10 p-2 flex items-center justify-center overflow-hidden shrink-0">
                                                                 <img 
-                                                                    src={logoFilePreview || companyForm.data.logo_image_url} 
+                                                                    src={logoFilePreview || appUrl(companyForm.data.logo_image_url)} 
                                                                     alt="Selected logo" 
                                                                     className="max-h-full max-w-full object-contain"
                                                                 />
@@ -4115,7 +4115,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                 <div className="w-16 h-20 rounded-lg border border-dashed border-white/15 bg-white/[0.02] overflow-hidden flex items-center justify-center shrink-0">
                                     {teamPhotoPreview || teamForm.data.photo_url ? (
                                         <img
-                                            src={teamPhotoPreview || teamForm.data.photo_url}
+                                            src={teamPhotoPreview || appUrl(teamForm.data.photo_url)}
                                             alt="Preview"
                                             className="w-full h-full object-cover filter grayscale"
                                         />

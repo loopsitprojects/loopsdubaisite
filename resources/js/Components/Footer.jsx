@@ -15,7 +15,7 @@ export default function Footer({ onContactClick }) {
                         <Link href={appUrl('/')} className="inline-block focus:outline-none group">
                             {company?.logo_type === 'image' && company?.logo_image_url ? (
                                 <img 
-                                    src={company.logo_image_url} 
+                                    src={appUrl(company.logo_image_url)} 
                                     alt={company.company_name || 'Loops Integrated'} 
                                     className="h-10 sm:h-12 w-auto max-w-[200px] object-contain group-hover:opacity-90 transition mb-1" 
                                 />

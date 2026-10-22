@@ -49,10 +49,10 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'company' => fn () => \App\Models\CompanySetting::first() ?? [
-                'logo_type' => 'text',
+                'logo_type' => 'image',
                 'logo_text_prefix' => 'Loops',
                 'logo_text_suffix' => 'Integrated',
-                'logo_image_url' => null,
+                'logo_image_url' => '/uploads/logos/loops_integrated_logo.png',
                 'company_name' => 'Loops Integrated',
                 'email' => 'hello@loopsdubai.com',
                 'phone' => '+971 4 000 0000',
