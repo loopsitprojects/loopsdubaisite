@@ -1,5 +1,68 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { appUrl } from '../utils/url';
+
+// Touch screens never fire hover, so there a card shows its hover look while it
+// crosses the middle of the viewport, or after it is tapped.
+function useTouchActive() {
+    const ref = useRef(null);
+    const [active, setActive] = useState(false);
+
+    useEffect(() => {
+        if (!window.matchMedia('(hover: none)').matches) return undefined;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => setActive(entry.isIntersecting),
+            { rootMargin: '-35% 0px -35% 0px' }
+        );
+        observer.observe(ref.current);
+
+        return () => observer.disconnect();
+    }, []);
+
+    const activate = () => {
+        if (window.matchMedia('(hover: none)').matches) setActive(true);
+    };
+
+    return { ref, active, activate };
+}
+
+function TeamCard({ member }) {
+    const { ref, active, activate } = useTouchActive();
+
+    return (
+        <div ref={ref} onPointerDown={activate} className="group flex flex-col">
+            {/* Photo Container */}
+            <div className={`w-full aspect-[4/5] rounded-2xl flex items-center justify-center transition-all duration-300 overflow-hidden ${
+                member.photo_url
+                    ? `border bg-gradient-to-b from-white/[0.05] to-white/[0.01] group-hover:border-white/25 shadow-lg ${active ? 'border-white/25' : 'border-white/10'}`
+                    : `border border-dashed group-hover:bg-white/[0.04] group-hover:border-white/30 p-4 ${active ? 'bg-white/[0.04] border-white/30' : 'bg-white/[0.02] border-white/15'}`
+            }`}>
+                {member.photo_url ? (
+                    <img
+                        src={appUrl(member.photo_url)}
+                        alt={member.name || '[Name]'}
+                        className={`w-full h-full object-cover object-top filter group-hover:grayscale-0 group-hover:scale-105 transition duration-500 ${active ? 'grayscale-0 scale-105' : 'grayscale'}`}
+                        loading="lazy"
+                    />
+                ) : (
+                    <span className={`text-xs sm:text-sm font-medium group-hover:text-neutral-200 transition-colors ${active ? 'text-neutral-200' : 'text-neutral-400'}`}>
+                        [Photo]
+                    </span>
+                )}
+            </div>
+
+            {/* Name & Role */}
+            <div className="mt-3.5">
+                <h3 className={`text-sm sm:text-base font-bold group-hover:text-[#14f1d9] transition-colors ${active ? 'text-[#14f1d9]' : 'text-white'}`}>
+                    {member.name || '[Name]'}
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                    {member.role || '[Role]'}
+                </p>
+            </div>
+        </div>
+    );
+}
 
 export default function About({ about, teamMembers }) {
     const tag = about?.tag || 'ABOUT';
@@ -42,37 +105,7 @@ export default function About({ about, teamMembers }) {
                 {/* Horizontal Single Line of All 4 Team Members */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                     {members.map((member, index) => (
-                        <div key={member.id || index} className="group flex flex-col">
-                            {/* Photo Container */}
-                            <div className={`w-full aspect-[4/5] rounded-2xl flex items-center justify-center transition-all duration-300 overflow-hidden ${
-                                member.photo_url
-                                    ? 'border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.01] group-hover:border-white/25 shadow-lg'
-                                    : 'border border-dashed border-white/15 bg-white/[0.02] group-hover:bg-white/[0.04] group-hover:border-white/30 p-4'
-                            }`}>
-                                {member.photo_url ? (
-                                    <img
-                                        src={appUrl(member.photo_url)}
-                                        alt={member.name || '[Name]'}
-                                        className="w-full h-full object-cover object-top filter grayscale group-hover:grayscale-0 group-hover:scale-105 transition duration-500"
-                                        loading="lazy"
-                                    />
-                                ) : (
-                                    <span className="text-xs sm:text-sm font-medium text-neutral-400 group-hover:text-neutral-200 transition-colors">
-                                        [Photo]
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Name & Role */}
-                            <div className="mt-3.5">
-                                <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-[#14f1d9] transition-colors">
-                                    {member.name || '[Name]'}
-                                </h3>
-                                <p className="text-xs text-neutral-400 mt-0.5">
-                                    {member.role || '[Role]'}
-                                </p>
-                            </div>
-                        </div>
+                        <TeamCard key={member.id || index} member={member} />
                     ))}
                 </div>
             </div>
