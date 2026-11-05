@@ -1,28 +1,38 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { Play, Sparkles } from 'lucide-react';
 import { appUrl } from '../utils/url';
 
+const MOBILE_REEL_URL = 'https://ai.loopsintegrated.co/loopsvideos/Showreel/DubaiswM.mp4';
+const MOBILE_QUERY = '(max-width: 767px)';
+
 export default function Hero({ hero, onBookCall }) {
-    const videoRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_QUERY).matches);
+
+    useEffect(() => {
+        const query = window.matchMedia(MOBILE_QUERY);
+        const handleChange = (event) => setIsMobile(event.matches);
+        query.addEventListener('change', handleChange);
+        return () => query.removeEventListener('change', handleChange);
+    }, []);
+
+    const desktopReelUrl = hero?.reel_video_url ? appUrl(hero.reel_video_url) : 'https://ai.loopsintegrated.co/loopsvideos/Showreel/Dubaisw.mp4';
+    // Only one source is set, so each device downloads just its own video
+    const reelUrl = isMobile ? MOBILE_REEL_URL : desktopReelUrl;
 
     return (
         <section className="relative min-h-screen pt-32 pb-12 md:pb-16 flex items-end justify-center overflow-hidden hero-diagonal-pattern select-none">
             {/* Background Ambient Video / Reel Layer */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
                 <video
-                    ref={videoRef}
+                    key={reelUrl}
+                    src={reelUrl}
                     autoPlay
                     loop
                     muted
                     playsInline
                     className="w-full h-full object-cover"
-                >
-                    <source
-                        src={hero?.reel_video_url ? appUrl(hero.reel_video_url) : 'https://ai.loopsintegrated.co/loopsvideos/Showreel/Dubaisw.mp4'}
-                        type="video/mp4"
-                    />
-                </video>
+                />
                 {/* Dark fade along the bottom for the text, and a soft one under the nav */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/80 via-60% to-transparent to-90% md:via-[#080808]/75 md:via-40% md:to-75%" />
                 <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#080808]/70 to-transparent" />
