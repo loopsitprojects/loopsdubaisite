@@ -27,16 +27,16 @@ export default function OtherServices({ setting, services }) {
         <section id="services" className="relative z-10 bg-[#080808] py-20 sm:py-28 select-none border-t border-white/[0.04]">
             <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
                 {/* Header & Title */}
-                <div className="max-w-3xl mb-12 sm:mb-16">
+                <div className="max-w-5xl mb-12 sm:mb-16">
                     {/* Category Tag: OUR OTHER SERVICES */}
                     <span className="block text-xs font-semibold tracking-[0.2em] text-neutral-400 uppercase mb-4">
                         {tag}
                     </span>
 
                     {/* Headline */}
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold sm:font-black tracking-tight text-white leading-[1.08]">
-                        <span className="block">{headline1}</span>
-                        {headline2 && <span className="block">{headline2}</span>}
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold sm:font-black tracking-tight text-white leading-[1.08]">
+                        <span className="md:block">{headline1}</span>{' '}
+                        {headline2 && <span className="md:block">{headline2}</span>}
                     </h2>
                 </div>
 
