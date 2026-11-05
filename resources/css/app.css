@@ -61,3 +61,29 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #3f3f46;
 }
+
+/* Brand logo strip: endless linear scroll with faded edges */
+.brand-marquee {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+}
+
+.brand-marquee-track {
+    animation: brand-marquee linear infinite;
+}
+
+.brand-marquee:hover .brand-marquee-track {
+    animation-play-state: paused;
+}
+
+@keyframes brand-marquee {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brand-marquee-track {
+        animation: none;
+    }
+}

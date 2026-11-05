@@ -47,13 +47,9 @@ export default function Home({ hero, behindTheFilm, about, teamMembers, services
                 <Hero
                     hero={hero}
                     onBookCall={() => setBookModalOpen(true)}
-                    onWatchWork={() => {
-                        setSelectedFilm(null);
-                        setWatchModalOpen(true);
-                    }}
                 />
 
-                {/* 2nd Section: CREATED FOR Brand Logos */}
+                {/* 2nd Section: Trusted by leading brands (logo strip) */}
                 <CreatedFor logos={brandLogos} />
 
                 {/* 3rd Section: FEATURED FILMS ("Our best work, for brands you know.") */}
@@ -78,7 +74,7 @@ export default function Home({ hero, behindTheFilm, about, teamMembers, services
                 {/* 7th Section: OUR OTHER SERVICES ("Beyond video, we support the wider brand.") */}
                 <OtherServices setting={servicesSetting} services={services} />
 
-                {/* 8th Section: HIGH-CONTRAST CTA ("Send a brief. Get a storyboard concept in [72] hours.") */}
+                {/* 8th Section: HIGH-CONTRAST CTA ("From brief to big idea in 72 hours.") */}
                 <CtaBanner onBookCall={() => setBookModalOpen(true)} />
             </main>
 

@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
                 'secondary_cta_text' => 'Book a creative call',
                 'secondary_cta_link' => '#book',
                 'reel_placeholder_text' => '[HERO REEL PLACEHOLDER - 4G-008 - MUTED AUTOPLAY]',
-                'reel_video_url' => 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4',
+                'reel_video_url' => 'https://ai.loopsintegrated.co/loopsvideos/Showreel/Dubaisw.mp4',
             ]
         );
 
@@ -58,10 +58,10 @@ class DatabaseSeeder extends Seeder
                 'title_line_2' => 'film.',
                 'concept_label' => 'Human concept',
                 'concept_placeholder_text' => '[Storyboard / reference frames]',
-                'concept_image_url' => null,
+                'concept_image_url' => '/images/storyboard/lily-lanka',
                 'finish_label' => 'AI production, human finish',
                 'finish_placeholder_text' => '[Final film frame]',
-                'finish_image_url' => null,
+                'finish_image_url' => 'https://www.youtube.com/watch?v=9FpcdDYyvWo',
             ]
         );
 
@@ -71,20 +71,43 @@ class DatabaseSeeder extends Seeder
             [
                 'tag' => 'ABOUT',
                 'headline' => 'Built for global brands.',
-                'description' => "[Two to three sentences on the team's international experience, the markets you have worked in and why creative direction stays human.]",
+                'description' => 'From Colombo to Doha and Sydney, we’ve worked with brands across 14 markets, including the UK, USA, Canada, Japan, Singapore, the UAE and New Zealand. That range has taught us how to make ideas travel without losing what makes a brand distinct. Our creative direction stays human because the ideas that move people come from people, and tools only speed up the making.',
             ]
         );
 
-        for ($i = 1; $i <= 4; $i++) {
-            TeamMember::updateOrCreate(
-                ['id' => $i],
-                [
-                    'name' => '[Name]',
-                    'role' => '[Role]',
-                    'photo_url' => null,
-                    'sort_order' => $i,
-                ]
-            );
+        $defaultTeam = [
+            [
+                'id' => 1,
+                'name' => 'Shehan Selvanayagam',
+                'role' => 'Managing Director',
+                'photo_url' => '/uploads/team/team_1793773609_9izX5N.png',
+                'sort_order' => 1,
+            ],
+            [
+                'id' => 2,
+                'name' => 'Stephan Anoj',
+                'role' => 'Executive Director',
+                'photo_url' => '/uploads/team/team_1793773653_AOgqAJ.png',
+                'sort_order' => 2,
+            ],
+            [
+                'id' => 3,
+                'name' => 'Oken Silva',
+                'role' => 'Head of Digital',
+                'photo_url' => '/uploads/team/team_1793773682_ZHO02B.png',
+                'sort_order' => 3,
+            ],
+            [
+                'id' => 4,
+                'name' => 'Perez Daniel',
+                'role' => 'Creative Director',
+                'photo_url' => '/uploads/team/team_1793773714_3rlFFO.png',
+                'sort_order' => 4,
+            ],
+        ];
+
+        foreach ($defaultTeam as $member) {
+            TeamMember::updateOrCreate(['id' => $member['id']], $member);
         }
 
         // 5. Create Default Other Services Setting & Items
@@ -101,19 +124,19 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'title' => 'Brand and creative strategy',
-                'description' => '[Two-line description to confirm with the team.]',
+                'description' => "Positioning, brand architecture and 360° creative concepts, built on research and consumer insight.\nIdentities, packaging and campaign ideas that give a brand a clear, ownable voice.",
                 'sort_order' => 1,
             ],
             [
                 'id' => 2,
                 'title' => 'Digital performance',
-                'description' => '[Two-line description to confirm with the team.]',
+                'description' => "Multichannel strategy, social, content, SEO and performance media, planned and bought around your goals.\nAnalytics and automation keep every campaign measurable and optimised for growth.",
                 'sort_order' => 2,
             ],
             [
                 'id' => 3,
                 'title' => 'Experiences and events',
-                'description' => '[Two-line description to confirm with the team.]',
+                'description' => "Event design, brand activations and ambient and outdoor concepts that put the brand in front of people in real life.\nBuilt to be memorable on the day and to carry on through content and social.",
                 'sort_order' => 3,
             ],
         ];
@@ -277,18 +300,24 @@ class DatabaseSeeder extends Seeder
             PortfolioItem::updateOrCreate(['id' => $film['id']], $film);
         }
 
-        // 5. Create 6 Brand Logos for CREATED FOR Section (matching screenshot)
-        for ($i = 1; $i <= 6; $i++) {
+        // 5. Brand logos for the "Trusted by leading brands" strip
+        $brands = [
+            ['name' => 'Yamaha', 'logo_url' => '/images/brands/yamaha.svg'],
+            ['name' => 'PepsiCo', 'logo_url' => '/images/brands/pepsico.png'],
+            ['name' => 'British Council', 'logo_url' => '/images/brands/british-council.png'],
+            ['name' => 'Nas Daily', 'logo_url' => '/images/brands/nas-daily.png'],
+            ['name' => 'Rauland Australia', 'logo_url' => '/images/brands/rauland.png'],
+        ];
+
+        foreach ($brands as $index => $brand) {
             \App\Models\BrandLogo::updateOrCreate(
-                ['id' => $i],
-                [
-                    'name' => '[Brand logo]',
-                    'logo_url' => null,
-                    'sort_order' => $i,
-                    'is_active' => true,
-                ]
+                ['id' => $index + 1],
+                $brand + ['sort_order' => $index + 1, 'is_active' => true]
             );
         }
+
+        // Remove the leftover sixth placeholder row
+        \App\Models\BrandLogo::where('name', '[Brand logo]')->delete();
 
         // 6. Create Default Company Settings
         \App\Models\CompanySetting::updateOrCreate(

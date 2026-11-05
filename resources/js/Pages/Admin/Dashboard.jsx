@@ -391,7 +391,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
         secondary_cta_text: hero?.secondary_cta_text || 'Book a creative call',
         secondary_cta_link: hero?.secondary_cta_link || '#book',
         reel_placeholder_text: hero?.reel_placeholder_text || '[HERO REEL PLACEHOLDER - 4G-008 - MUTED AUTOPLAY]',
-        reel_video_url: hero?.reel_video_url || 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4',
+        reel_video_url: hero?.reel_video_url || 'https://ai.loopsintegrated.co/loopsvideos/Showreel/Dubaisw.mp4',
     });
 
     // Form for Adding / Editing a Curated Film
@@ -1398,17 +1398,35 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block mb-2">
                                                         Card Preview
                                                     </span>
-                                                    <div className="w-full aspect-[16/10] rounded-xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-4 overflow-hidden relative">
-                                                        {conceptFilePreview || behindForm.data.concept_image_url ? (
+                                                    <div className="w-full aspect-video rounded-xl border border-white/10 bg-[#101217] flex items-center justify-center overflow-hidden relative">
+                                                        {conceptFilePreview ? (
                                                             <img
-                                                                src={conceptFilePreview || appUrl(behindForm.data.concept_image_url)}
+                                                                src={conceptFilePreview}
+                                                                alt="Concept Preview"
+                                                                className="w-full h-full object-cover rounded-lg"
+                                                            />
+                                                        ) : behindForm.data.concept_image_url && !behindForm.data.concept_image_url.includes('storyboard') ? (
+                                                            <img
+                                                                src={appUrl(behindForm.data.concept_image_url)}
                                                                 alt="Concept Preview"
                                                                 className="w-full h-full object-cover rounded-lg"
                                                             />
                                                         ) : (
-                                                            <span className="text-xs font-mono text-neutral-400 text-center">
-                                                                {behindForm.data.concept_placeholder_text || '[Storyboard / reference frames]'}
-                                                            </span>
+                                                            <div className="relative w-full h-full">
+                                                                <img
+                                                                    src={appUrl('/images/storyboard/lily-lanka/shot_01.webp')}
+                                                                    alt="Storyboard Slider"
+                                                                    className="w-full h-full object-cover rounded-lg"
+                                                                />
+                                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                                    <span className="px-2.5 py-1 rounded-full bg-[#f7a838]/20 text-[#f7a838] border border-[#f7a838]/40 text-xs font-semibold backdrop-blur-md">
+                                                                        Storyboard Slider (17 Frames)
+                                                                    </span>
+                                                                </div>
+                                                                <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono">
+                                                                    17 Shots
+                                                                </span>
+                                                            </div>
                                                         )}
                                                     </div>
                                                     <div className="mt-2 text-xs font-semibold text-[#f7a838]">
@@ -1505,7 +1523,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                                         behindForm.setData('finish_image_url', e.target.value);
                                                                         setFinishFilePreview(null);
                                                                     }}
-                                                                    placeholder="Or paste external image URL: https://..."
+                                                                    placeholder="Or paste external image or video URL (YouTube, Vimeo, MP4): https://..."
                                                                     className="w-full px-4 py-2 rounded-xl bg-neutral-900 border border-white/10 text-neutral-300 text-xs focus:outline-none focus:border-[#14f1d9] transition font-mono"
                                                                 />
                                                             </div>
@@ -1518,15 +1536,45 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block mb-2">
                                                         Card Preview
                                                     </span>
-                                                    <div className="w-full aspect-[16/10] rounded-xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-4 overflow-hidden relative">
-                                                        {finishFilePreview || behindForm.data.finish_image_url ? (
+                                                    <div className="w-full aspect-[16/10] rounded-xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center overflow-hidden relative">
+                                                        {finishFilePreview ? (
                                                             <img
-                                                                src={finishFilePreview || appUrl(behindForm.data.finish_image_url)}
+                                                                src={finishFilePreview}
                                                                 alt="Finish Preview"
                                                                 className="w-full h-full object-cover rounded-lg"
                                                             />
+                                                        ) : behindForm.data.finish_image_url ? (
+                                                            (() => {
+                                                                const parsed = parseVideoUrl(behindForm.data.finish_image_url);
+                                                                if (parsed.type === 'youtube' && parsed.thumbnailUrl) {
+                                                                    return (
+                                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                                            <img
+                                                                                src={parsed.thumbnailUrl}
+                                                                                alt="Finish Video Preview"
+                                                                                className="w-full h-full object-cover rounded-lg"
+                                                                            />
+                                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                                                <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
+                                                                                    <Play size={18} fill="white" className="ml-0.5" />
+                                                                                </div>
+                                                                            </div>
+                                                                            <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono">
+                                                                                YouTube
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <img
+                                                                        src={appUrl(behindForm.data.finish_image_url)}
+                                                                        alt="Finish Preview"
+                                                                        className="w-full h-full object-cover rounded-lg"
+                                                                    />
+                                                                );
+                                                            })()
                                                         ) : (
-                                                            <span className="text-xs font-mono text-neutral-400 text-center">
+                                                            <span className="text-xs font-mono text-neutral-400 text-center p-4">
                                                                 {behindForm.data.finish_placeholder_text || '[Final film frame]'}
                                                             </span>
                                                         )}
@@ -1566,17 +1614,35 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                                                 <div>
-                                                    <div className="w-full aspect-[16/10] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-6 overflow-hidden">
-                                                        {conceptFilePreview || behindForm.data.concept_image_url ? (
+                                                    <div className="w-full aspect-video rounded-2xl border border-white/10 bg-[#101217] flex items-center justify-center overflow-hidden relative">
+                                                        {conceptFilePreview ? (
                                                             <img
-                                                                src={conceptFilePreview || appUrl(behindForm.data.concept_image_url)}
+                                                                src={conceptFilePreview}
+                                                                alt="Concept"
+                                                                className="w-full h-full object-cover rounded-xl"
+                                                            />
+                                                        ) : behindForm.data.concept_image_url && !behindForm.data.concept_image_url.includes('storyboard') ? (
+                                                            <img
+                                                                src={appUrl(behindForm.data.concept_image_url)}
                                                                 alt="Concept"
                                                                 className="w-full h-full object-cover rounded-xl"
                                                             />
                                                         ) : (
-                                                            <span className="text-xs sm:text-sm font-medium text-neutral-400">
-                                                                {behindForm.data.concept_placeholder_text || '[Storyboard / reference frames]'}
-                                                            </span>
+                                                            <div className="relative w-full h-full">
+                                                                <img
+                                                                    src={appUrl('/images/storyboard/lily-lanka/shot_01.webp')}
+                                                                    alt="Concept Storyboard"
+                                                                    className="w-full h-full object-cover rounded-xl"
+                                                                />
+                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 p-4 flex flex-col justify-between">
+                                                                    <span className="self-start px-2 py-0.5 rounded-full bg-[#f7a838]/20 text-[#f7a838] border border-[#f7a838]/40 text-[10px] font-bold">
+                                                                        STORYBOARD SLIDER (17 FRAMES)
+                                                                    </span>
+                                                                </div>
+                                                                <span className="absolute top-3 right-3 px-2 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono">
+                                                                    Shot 01 / 17
+                                                                </span>
+                                                            </div>
                                                         )}
                                                     </div>
                                                     <div className="mt-4 text-xs sm:text-sm font-semibold text-[#f7a838]">
@@ -1585,15 +1651,45 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                 </div>
 
                                                 <div>
-                                                    <div className="w-full aspect-[16/10] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center p-6 overflow-hidden">
-                                                        {finishFilePreview || behindForm.data.finish_image_url ? (
+                                                    <div className="w-full aspect-[16/10] rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex items-center justify-center overflow-hidden">
+                                                        {finishFilePreview ? (
                                                             <img
-                                                                src={finishFilePreview || appUrl(behindForm.data.finish_image_url)}
+                                                                src={finishFilePreview}
                                                                 alt="Finished"
                                                                 className="w-full h-full object-cover rounded-xl"
                                                             />
+                                                        ) : behindForm.data.finish_image_url ? (
+                                                            (() => {
+                                                                const parsed = parseVideoUrl(behindForm.data.finish_image_url);
+                                                                if (parsed.type === 'youtube' && parsed.thumbnailUrl) {
+                                                                    return (
+                                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                                            <img
+                                                                                src={parsed.thumbnailUrl}
+                                                                                alt="Finished Video"
+                                                                                className="w-full h-full object-cover rounded-xl"
+                                                                            />
+                                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                                                <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
+                                                                                    <Play size={22} fill="white" className="ml-0.5" />
+                                                                                </div>
+                                                                            </div>
+                                                                            <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-black/80 text-white text-xs font-mono">
+                                                                                YouTube Video
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <img
+                                                                        src={appUrl(behindForm.data.finish_image_url)}
+                                                                        alt="Finished"
+                                                                        className="w-full h-full object-cover rounded-xl"
+                                                                    />
+                                                                );
+                                                            })()
                                                         ) : (
-                                                            <span className="text-xs sm:text-sm font-medium text-neutral-400">
+                                                            <span className="text-xs sm:text-sm font-medium text-neutral-400 p-6 text-center">
                                                                 {behindForm.data.finish_placeholder_text || '[Final film frame]'}
                                                             </span>
                                                         )}

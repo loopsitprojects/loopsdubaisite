@@ -1,49 +1,54 @@
 import React from 'react';
 import { appUrl } from '../utils/url';
 
-export default function CreatedFor({ logos }) {
-    // Default to 6 items if not provided or empty
-    const items = logos && logos.length > 0 ? logos : [
-        { id: 1, name: '[Brand logo]' },
-        { id: 2, name: '[Brand logo]' },
-        { id: 3, name: '[Brand logo]' },
-        { id: 4, name: '[Brand logo]' },
-        { id: 5, name: '[Brand logo]' },
-        { id: 6, name: '[Brand logo]' },
-    ];
+// Each half of the marquee needs to be wider than the viewport for the loop to
+// stay seamless, so short brand lists are repeated up to this many slots.
+const MIN_SLOTS_PER_HALF = 16;
+const SECONDS_PER_SLOT = 3;
+
+export default function CreatedFor({ logos = [] }) {
+    if (logos.length === 0) return null;
+
+    const repeats = Math.ceil(MIN_SLOTS_PER_HALF / logos.length);
+    const half = Array.from({ length: repeats }, () => logos).flat();
+    const track = [...half, ...half];
 
     return (
         <section className="relative z-10 bg-[#07080a] border-y border-white/[0.06] py-8 sm:py-10 overflow-hidden select-none">
-            <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-                <div className="flex flex-col md:flex-row md:items-center gap-6 lg:gap-10">
-                    {/* Left Title: "CREATED FOR" */}
-                    <div className="shrink-0">
-                        <span className="text-xs font-semibold tracking-[0.2em] text-neutral-400 uppercase">
-                            CREATED FOR
-                        </span>
-                    </div>
+            <h2 className="px-6 text-center text-xs sm:text-sm font-normal text-neutral-400">
+                Trusted by leading brands
+            </h2>
 
-                    {/* Horizontal Row of 6 Brand Logo Cards */}
-                    <div className="flex-1 flex items-center gap-3 sm:gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-                        {items.slice(0, 6).map((item, index) => (
+            <div className="brand-marquee mt-6 sm:mt-7 overflow-hidden">
+                <div
+                    className="brand-marquee-track flex w-max items-center"
+                    style={{ animationDuration: `${half.length * SECONDS_PER_SLOT}s` }}
+                >
+                    {track.map((item, index) => {
+                        // Only the first copy of each brand is exposed to assistive tech.
+                        const isDuplicate = index >= logos.length;
+
+                        return (
                             <div
-                                key={item.id || index}
-                                className="group shrink-0 w-[130px] sm:w-[150px] lg:w-[160px] h-[62px] sm:h-[68px] rounded-xl sm:rounded-2xl border border-dashed border-white/15 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/30 flex items-center justify-center transition-all duration-200"
+                                key={`${item.id}-${index}`}
+                                aria-hidden={isDuplicate || undefined}
+                                className="shrink-0 w-[140px] sm:w-[180px] lg:w-[220px] h-12 px-5 sm:px-8 flex items-center justify-center"
                             >
                                 {item.logo_url ? (
                                     <img
                                         src={appUrl(item.logo_url)}
-                                        alt={item.name}
-                                        className="max-h-8 max-w-[80%] object-contain filter grayscale group-hover:grayscale-0 opacity-70 group-hover:opacity-100 transition"
+                                        alt={isDuplicate ? '' : item.name}
+                                        loading="lazy"
+                                        className="max-h-9 sm:max-h-10 max-w-full object-contain brightness-0 invert opacity-60 hover:opacity-100 transition-opacity duration-300"
                                     />
                                 ) : (
-                                    <span className="text-xs sm:text-sm font-normal text-neutral-400 group-hover:text-neutral-200 transition-colors tracking-tight">
-                                        {item.name || '[Brand logo]'}
+                                    <span className="text-sm font-medium whitespace-nowrap text-neutral-400">
+                                        {item.name}
                                     </span>
                                 )}
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
             </div>
         </section>

@@ -32,7 +32,7 @@ class HomeController extends Controller
             'secondary_cta_text' => 'Book a creative call',
             'secondary_cta_link' => '#book',
             'reel_placeholder_text' => '[HERO REEL PLACEHOLDER - 4G-008 - MUTED AUTOPLAY]',
-            'reel_video_url' => 'https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-city-street-in-the-rain-41133-large.mp4',
+            'reel_video_url' => 'https://ai.loopsintegrated.co/loopsvideos/Showreel/Dubaisw.mp4',
         ]);
 
         $behindTheFilm = BehindTheFilmSetting::first() ?? BehindTheFilmSetting::create([
@@ -41,10 +41,10 @@ class HomeController extends Controller
             'title_line_2' => 'film.',
             'concept_label' => 'Human concept',
             'concept_placeholder_text' => '[Storyboard / reference frames]',
-            'concept_image_url' => null,
+            'concept_image_url' => '/images/storyboard/lily-lanka',
             'finish_label' => 'AI production, human finish',
             'finish_placeholder_text' => '[Final film frame]',
-            'finish_image_url' => null,
+            'finish_image_url' => 'https://www.youtube.com/watch?v=9FpcdDYyvWo',
         ]);
 
         $about = AboutSetting::first() ?? AboutSetting::create([

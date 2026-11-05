@@ -8,7 +8,6 @@ export default function Header({ onBookCall, activePage }) {
     const { url, props } = usePage();
     const company = props?.company;
     const isWorkActive = activePage === 'work' || url.includes('/work') || url.includes('/our-work');
-    const isContactActive = activePage === 'contact' || url.includes('/contact');
 
     return (
         <header className="fixed top-0 left-0 right-0 z-40 bg-[#0b0c0e]/85 backdrop-blur-md border-b border-white/[0.05] transition-all select-none">
@@ -61,16 +60,6 @@ export default function Header({ onBookCall, activePage }) {
                     >
                         Our other services
                     </a>
-                    <Link
-                        href={appUrl('/contact')}
-                        className={`text-sm font-medium transition-colors duration-200 ${
-                            isContactActive
-                                ? 'text-[#14f1d9] font-semibold'
-                                : 'text-gray-300 hover:text-white'
-                        }`}
-                    >
-                        Contact
-                    </Link>
                 </nav>
 
                 {/* Right Desktop CTA */}
@@ -131,17 +120,6 @@ export default function Header({ onBookCall, activePage }) {
                         >
                             Our other services
                         </a>
-                        <Link
-                            href={appUrl('/contact')}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className={`text-base py-2 transition-colors ${
-                                isContactActive
-                                    ? 'text-[#14f1d9] font-semibold'
-                                    : 'text-gray-300 hover:text-white'
-                            }`}
-                        >
-                            Contact
-                        </Link>
                     </div>
                     <div className="pt-4 border-t border-white/10">
                         <Link
