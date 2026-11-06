@@ -193,7 +193,7 @@ export default function Work({ portfolio, workSetting }) {
                         {/* Right: "Our other services" Pill Link */}
                         <div className="shrink-0">
                             <a
-                                href={workSetting?.services_cta_link || '/#services'}
+                                href={appUrl(workSetting?.services_cta_link || '/#services')}
                                 className="inline-block border border-white/20 text-neutral-300 font-medium text-xs sm:text-sm px-5 py-2 rounded-full hover:border-white/40 hover:text-white transition-all bg-transparent"
                             >
                                 {workSetting?.services_cta_text || 'Our other services'}
@@ -405,10 +405,7 @@ export default function Work({ portfolio, workSetting }) {
                 </section>
 
                 {/* 3rd Section: High-Contrast CTA Banner (Matching exact screenshot) */}
-                <CtaBanner
-                    onBookCall={() => setBookModalOpen(true)}
-                    showSubtitle={false}
-                />
+                <CtaBanner onBookCall={() => setBookModalOpen(true)} />
             </main>
 
             {/* 3. Footer */}

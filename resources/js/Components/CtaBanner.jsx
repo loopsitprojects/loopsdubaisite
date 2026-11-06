@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function CtaBanner({ onBookCall, showSubtitle = true }) {
+export default function CtaBanner({ onBookCall }) {
     return (
         <section className="relative z-10 bg-[#f4f1ea] py-14 sm:py-18 select-none">
             <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
@@ -10,11 +10,9 @@ export default function CtaBanner({ onBookCall, showSubtitle = true }) {
                         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.85rem] font-extrabold sm:font-black tracking-tight text-[#0a0a0a] leading-[1.1]">
                             From brief to big idea in 72 hours.
                         </h2>
-                        {showSubtitle && (
-                            <p className="text-sm sm:text-base text-neutral-600 font-normal leading-relaxed mt-3">
-                                AI activations, custom platforms and storytelling that gets shared. Built for ambitious UAE brands.
-                            </p>
-                        )}
+                        <p className="text-sm sm:text-base text-neutral-600 font-normal leading-relaxed mt-3">
+                            AI activations, custom platforms and storytelling that gets shared. Built for ambitious UAE brands.
+                        </p>
                     </div>
 
                     {/* Right: Black Pill Action Button */}

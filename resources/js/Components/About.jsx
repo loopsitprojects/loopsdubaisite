@@ -81,22 +81,21 @@ export default function About({ about, teamMembers }) {
         <section id="about" className="relative z-10 bg-[#080808] py-20 sm:py-28 select-none border-t border-white/[0.04]">
             <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
                 {/* Header & Description */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 sm:gap-10 mb-12 sm:mb-16">
-                    <div className="max-w-2xl">
-                        {/* Amber/Orange Category Tag: ABOUT */}
-                        <span className="block text-xs font-bold tracking-[0.2em] text-[#f7a838] uppercase mb-4">
-                            {tag}
-                        </span>
+                <div className="mb-12 sm:mb-16">
+                    {/* Amber/Orange Category Tag: ABOUT */}
+                    <span className="block text-xs font-bold tracking-[0.2em] text-[#f7a838] uppercase mb-4">
+                        {tag}
+                    </span>
 
+                    {/* Same columns and gap as the team grid, so the description lines up with the third card */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-8">
                         {/* Headline */}
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold sm:font-black tracking-tight text-white leading-[1.08]">
+                        <h2 className="max-w-2xl text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold sm:font-black tracking-tight text-white leading-[1.08]">
                             {headline}
                         </h2>
-                    </div>
 
-                    {/* Description Paragraph */}
-                    <div className="max-w-xl">
-                        <p className="text-sm sm:text-base text-neutral-400 font-normal leading-relaxed whitespace-pre-line">
+                        {/* Description Paragraph */}
+                        <p className="max-w-xl lg:max-w-none text-pretty text-sm sm:text-base text-neutral-400 font-normal leading-relaxed whitespace-pre-line">
                             {description}
                         </p>
                     </div>
