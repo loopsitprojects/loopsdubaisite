@@ -311,6 +311,9 @@ class DatabaseSeeder extends Seeder
             ['name' => 'British Council', 'logo_url' => '/images/brands/british-council.png'],
             ['name' => 'Nas Daily', 'logo_url' => '/images/brands/nas-daily.png'],
             ['name' => 'Rauland Australia', 'logo_url' => '/images/brands/rauland.png'],
+            ['name' => 'SriLankan Airlines', 'logo_url' => '/images/brands/srilankan.png'],
+            ['name' => 'Coca-Cola', 'logo_url' => '/images/brands/coca-cola.png'],
+            ['name' => 'Nestlé', 'logo_url' => '/images/brands/nestle.svg'],
         ];
 
         foreach ($brands as $index => $brand) {
