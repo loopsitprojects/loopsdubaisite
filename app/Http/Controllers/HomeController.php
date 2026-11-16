@@ -63,7 +63,17 @@ class HomeController extends Controller
 
         $services = ServiceItem::orderBy('sort_order')->get();
 
-        $portfolio = PortfolioItem::where('is_featured', true)->orderBy('sort_order')->get();
+        $portfolio = PortfolioItem::where('is_featured', true)
+            ->orderBy('featured_order')
+            ->orderBy('sort_order')
+            ->limit(PortfolioItem::FEATURED_LIMIT)
+            ->get();
+
+        // With nothing featured, show the first films from the Work page order
+        // rather than leaving the section empty.
+        if ($portfolio->isEmpty()) {
+            $portfolio = PortfolioItem::orderBy('sort_order')->limit(PortfolioItem::FEATURED_LIMIT)->get();
+        }
         $brandLogos = \App\Models\BrandLogo::where('is_active', true)->orderBy('sort_order')->get();
 
         return Inertia::render('Home', [

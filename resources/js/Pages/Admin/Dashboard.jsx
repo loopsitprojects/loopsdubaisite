@@ -34,7 +34,10 @@ import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    MessageSquare
+    MessageSquare,
+    Star,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { getFilmThumbnail, isDirectVideo, parseVideoUrl } from '../../utils/video';
 
@@ -566,6 +569,40 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                 onSuccess: () => setFilmModalOpen(false),
             });
         }
+    };
+
+    // Home page "Featured films": which films, in what order (max FEATURED_LIMIT,
+    // matching PortfolioItem::FEATURED_LIMIT). Saved immediately on every change.
+    const FEATURED_LIMIT = 4;
+    const featuredFilms = portfolio
+        .filter((film) => film.is_featured)
+        .sort((a, b) => (a.featured_order ?? Infinity) - (b.featured_order ?? Infinity) || (a.sort_order || 0) - (b.sort_order || 0))
+        .slice(0, FEATURED_LIMIT);
+    const featuredIds = featuredFilms.map((film) => film.id);
+    const [savingFeatured, setSavingFeatured] = useState(false);
+
+    const saveFeatured = (ids) => {
+        router.post('/admin/portfolio/featured', { ids }, {
+            preserveScroll: true,
+            onStart: () => setSavingFeatured(true),
+            onFinish: () => setSavingFeatured(false),
+        });
+    };
+
+    const toggleFeatured = (film) => {
+        if (featuredIds.includes(film.id)) {
+            saveFeatured(featuredIds.filter((id) => id !== film.id));
+        } else if (featuredIds.length < FEATURED_LIMIT) {
+            saveFeatured([...featuredIds, film.id]);
+        }
+    };
+
+    const moveFeatured = (index, direction) => {
+        const ids = [...featuredIds];
+        const target = index + direction;
+        if (target < 0 || target >= ids.length) return;
+        [ids[index], ids[target]] = [ids[target], ids[index]];
+        saveFeatured(ids);
     };
 
     const handleDeleteFilm = (id) => {
@@ -2628,6 +2665,82 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                         </button>
                                     </div>
 
+                                    {/* Home page Featured Films: selection and order */}
+                                    <div className="bg-[#0b0c10] border border-white/10 rounded-xl p-5 space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                                            <div>
+                                                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                                    <Star size={15} className="text-[#14f1d9]" fill="currentColor" />
+                                                    <span>Featured on the Home page</span>
+                                                </h3>
+                                                <p className="text-xs text-neutral-400 mt-1">
+                                                    Choose up to {FEATURED_LIMIT} films with the star on each film below, then set their order here. This doesn't change the Our Work page.
+                                                </p>
+                                            </div>
+                                            <span className="text-xs font-mono text-neutral-400 shrink-0">
+                                                {savingFeatured ? 'Saving…' : `${featuredFilms.length} / ${FEATURED_LIMIT} selected`}
+                                            </span>
+                                        </div>
+
+                                        {featuredFilms.length === 0 ? (
+                                            <p className="text-xs text-neutral-500 border border-dashed border-white/10 rounded-lg px-4 py-5 text-center">
+                                                No films selected. The Home page shows the first {FEATURED_LIMIT} films from the Our Work order until you pick some.
+                                            </p>
+                                        ) : (
+                                            <ol className="space-y-2">
+                                                {featuredFilms.map((film, index) => (
+                                                    <li
+                                                        key={film.id}
+                                                        className="flex items-center gap-3 bg-neutral-900/60 border border-white/10 rounded-lg p-2 pr-3"
+                                                    >
+                                                        <span className="w-6 text-center text-xs font-mono font-bold text-[#14f1d9]">{index + 1}</span>
+                                                        <div className="w-20 aspect-video rounded-md overflow-hidden bg-neutral-800 shrink-0">
+                                                            {getFilmThumbnail(film) && (
+                                                                <img src={getFilmThumbnail(film)} alt="" className="w-full h-full object-cover" />
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-sm font-semibold text-white truncate">{film.title}</p>
+                                                            <p className="text-[11px] text-neutral-500">{film.category || 'Real estate'} · {film.duration || '[0:45]'}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => moveFeatured(index, -1)}
+                                                                disabled={index === 0 || savingFeatured}
+                                                                aria-label={`Move ${film.title} up`}
+                                                                title="Move up"
+                                                                className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                                            >
+                                                                <ArrowUp size={14} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => moveFeatured(index, 1)}
+                                                                disabled={index === featuredFilms.length - 1 || savingFeatured}
+                                                                aria-label={`Move ${film.title} down`}
+                                                                title="Move down"
+                                                                className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                                            >
+                                                                <ArrowDown size={14} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleFeatured(film)}
+                                                                disabled={savingFeatured}
+                                                                aria-label={`Remove ${film.title} from featured`}
+                                                                title="Remove from Home page"
+                                                                className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer disabled:opacity-25"
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ol>
+                                        )}
+                                    </div>
+
                                     {/* Category filter pills */}
                                     <div className="flex flex-wrap items-center gap-2 pt-2 border-b border-white/10 pb-4">
                                         {['All', 'Real estate', 'Consumer', 'Tech', 'Auto'].map((cat) => (
@@ -2712,8 +2825,35 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                         <div className="pt-3 border-t border-white/10 flex items-center justify-between">
                                                             <span className="text-[11px] font-mono text-neutral-500">
                                                                 Order: #{film.sort_order || 1}
+                                                                {featuredIds.includes(film.id) && (
+                                                                    <span className="ml-2 text-[#14f1d9]">Home #{featuredIds.indexOf(film.id) + 1}</span>
+                                                                )}
                                                             </span>
                                                             <div className="flex items-center gap-1.5">
+                                                                {(() => {
+                                                                    const isFeatured = featuredIds.includes(film.id);
+                                                                    const isFull = !isFeatured && featuredIds.length >= FEATURED_LIMIT;
+                                                                    return (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => toggleFeatured(film)}
+                                                                            disabled={isFull || savingFeatured}
+                                                                            aria-pressed={isFeatured}
+                                                                            title={isFeatured
+                                                                                ? 'Remove from Home page'
+                                                                                : isFull
+                                                                                    ? `Home page already has ${FEATURED_LIMIT} films. Remove one first.`
+                                                                                    : 'Feature on Home page'}
+                                                                            className={`p-1.5 rounded-lg transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                                                                                isFeatured
+                                                                                    ? 'text-[#14f1d9] hover:bg-[#14f1d9]/10'
+                                                                                    : 'text-neutral-400 hover:text-white hover:bg-white/10 disabled:hover:bg-transparent disabled:hover:text-neutral-400'
+                                                                            }`}
+                                                                        >
+                                                                            <Star size={14} fill={isFeatured ? 'currentColor' : 'none'} />
+                                                                        </button>
+                                                                    );
+                                                                })()}
                                                                 <button
                                                                     onClick={() => openEditFilmModal(film)}
                                                                     className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"

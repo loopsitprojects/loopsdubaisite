@@ -10,6 +10,7 @@ use App\Models\ServicesSetting;
 use App\Models\ServiceItem;
 use App\Models\Booking;
 use App\Models\PortfolioItem;
+use Illuminate\Support\Facades\DB;
 use App\Models\CompanySetting;
 use App\Models\WorkSetting;
 use App\Models\ContactSetting;
@@ -305,6 +306,27 @@ class AdminController extends Controller
         $portfolioItem->update($validated);
 
         return back()->with('success', 'Film updated successfully.');
+    }
+
+    /**
+     * Set which films appear in the Home page "Featured films" section, in order.
+     */
+    public function updateFeaturedFilms(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'present|array|max:' . PortfolioItem::FEATURED_LIMIT,
+            'ids.*' => 'integer|distinct|exists:portfolio_items,id',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            PortfolioItem::query()->update(['is_featured' => false, 'featured_order' => null]);
+
+            foreach (array_values($validated['ids']) as $index => $id) {
+                PortfolioItem::whereKey($id)->update(['is_featured' => true, 'featured_order' => $index + 1]);
+            }
+        });
+
+        return back()->with('success', 'Featured films updated.');
     }
 
     /**

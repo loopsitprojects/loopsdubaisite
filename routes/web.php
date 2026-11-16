@@ -29,6 +29,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     
     // Portfolio / Curated Films CRUD
     Route::post('/portfolio', [AdminController::class, 'storePortfolio'])->name('admin.portfolio.store');
+    Route::post('/portfolio/featured', [AdminController::class, 'updateFeaturedFilms'])->name('admin.portfolio.featured');
     Route::patch('/portfolio/{portfolioItem}', [AdminController::class, 'updatePortfolio'])->name('admin.portfolio.update');
     Route::post('/portfolio/{portfolioItem}', [AdminController::class, 'updatePortfolio'])->name('admin.portfolio.update.post');
     Route::delete('/portfolio/{portfolioItem}', [AdminController::class, 'deletePortfolio'])->name('admin.portfolio.delete');

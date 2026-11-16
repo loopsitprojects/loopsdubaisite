@@ -9,6 +9,9 @@ class PortfolioItem extends Model
 {
     use HasFactory;
 
+    // How many films the Home page "Featured films" grid shows.
+    public const FEATURED_LIMIT = 4;
+
     protected $fillable = [
         'title',
         'category',
@@ -20,5 +23,16 @@ class PortfolioItem extends Model
         'video_url',
         'is_featured',
         'sort_order',
+    ];
+
+    // New films are added to the Work page only; featuring one on the Home
+    // page is a separate choice made in the admin panel.
+    protected $attributes = [
+        'is_featured' => false,
+    ];
+
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'featured_order' => 'integer',
     ];
 }

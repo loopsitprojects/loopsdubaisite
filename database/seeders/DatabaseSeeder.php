@@ -188,6 +188,7 @@ class DatabaseSeeder extends Seeder
                 'thumbnail_url' => 'https://img.youtube.com/vi/NZBRpXRW4V0/maxresdefault.jpg',
                 'video_url' => 'https://www.youtube.com/watch?v=NZBRpXRW4V0&list=PLbgYKilHGIbE',
                 'is_featured' => true,
+                'featured_order' => 1,
                 'sort_order' => 1,
             ],
             [
@@ -201,6 +202,7 @@ class DatabaseSeeder extends Seeder
                 'thumbnail_url' => 'https://img.youtube.com/vi/MfDawFyD2H0/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/MfDawFyD2H0?si=e5Gx4xoXKbBKl8ji',
                 'is_featured' => true,
+                'featured_order' => 2,
                 'sort_order' => 2,
             ],
             [
@@ -214,6 +216,7 @@ class DatabaseSeeder extends Seeder
                 'thumbnail_url' => 'https://img.youtube.com/vi/dfgQZC8rrpI/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/dfgQZC8rrpI?si=SyVPSp0zX6Xle4Se',
                 'is_featured' => true,
+                'featured_order' => 3,
                 'sort_order' => 3,
             ],
             [
@@ -227,6 +230,7 @@ class DatabaseSeeder extends Seeder
                 'thumbnail_url' => 'https://img.youtube.com/vi/3i8EHmXjVGE/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/3i8EHmXjVGE?si=rkKs1yfQCic3lT6J',
                 'is_featured' => true,
+                'featured_order' => 4,
                 'sort_order' => 4,
             ],
             [
@@ -239,7 +243,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Next-generation AI cloud platform visualization.',
                 'thumbnail_url' => 'https://img.youtube.com/vi/SCvM_xxix04/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/SCvM_xxix04?si=PqV8-eRO3Wc92SjD',
-                'is_featured' => true,
+                'is_featured' => false,
                 'sort_order' => 5,
             ],
             [
@@ -252,7 +256,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Cybersecurity and hyper-connected world brand story.',
                 'thumbnail_url' => 'https://img.youtube.com/vi/ZJ3pMniorko/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/ZJ3pMniorko?si=Mc8P32w8epy6Whf7',
-                'is_featured' => true,
+                'is_featured' => false,
                 'sort_order' => 6,
             ],
             [
@@ -265,7 +269,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'High-velocity automotive cinematic launch film.',
                 'thumbnail_url' => 'https://img.youtube.com/vi/hL_OjUWdDRg/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/hL_OjUWdDRg?si=jJeG3L8NY5OGMo90',
-                'is_featured' => true,
+                'is_featured' => false,
                 'sort_order' => 7,
             ],
             [
@@ -278,7 +282,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Next-gen electric vehicle reveal and performance reel.',
                 'thumbnail_url' => 'https://img.youtube.com/vi/0YRnuCGvyR4/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/0YRnuCGvyR4?si=tOB9pNd1yoZ7y0it',
-                'is_featured' => true,
+                'is_featured' => false,
                 'sort_order' => 8,
             ],
             [
@@ -291,7 +295,7 @@ class DatabaseSeeder extends Seeder
                 'description' => null,
                 'thumbnail_url' => 'https://img.youtube.com/vi/5MZuArhqgAg/maxresdefault.jpg',
                 'video_url' => 'https://youtu.be/5MZuArhqgAg?si=4srDSZGo-OSfuh77',
-                'is_featured' => true,
+                'is_featured' => false,
                 'sort_order' => 9,
             ],
         ];
