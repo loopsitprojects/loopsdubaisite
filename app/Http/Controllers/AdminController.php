@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\CompanySetting;
 use App\Models\WorkSetting;
 use App\Models\ContactSetting;
+use App\Models\HomeSection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -117,6 +118,14 @@ class AdminController extends Controller
             'total_services' => ServiceItem::count(),
         ];
 
+        $homeSections = HomeSection::orderBy('sort_order')->get();
+        if ($homeSections->isEmpty()) {
+            foreach (HomeSection::DEFAULTS as $d) {
+                HomeSection::create($d);
+            }
+            $homeSections = HomeSection::orderBy('sort_order')->get();
+        }
+
         return Inertia::render('Admin/Dashboard', [
             'hero' => $hero,
             'behindTheFilm' => $behindTheFilm,
@@ -131,6 +140,8 @@ class AdminController extends Controller
             'workSetting' => $workSetting,
             'contactSetting' => $contactSetting,
             'stats' => $stats,
+            'homeSections' => $homeSections,
+            'sectionsVisibility' => HomeSection::getVisibilityMap(),
         ]);
     }
 
@@ -672,5 +683,52 @@ class AdminController extends Controller
         $contactSetting->save();
 
         return back()->with('success', 'Contact page copy updated successfully!');
+    }
+
+    /**
+     * Toggle visibility of a single landing page section.
+     */
+    public function toggleSectionVisibility(Request $request)
+    {
+        $validated = $request->validate([
+            'section_key' => 'required|string',
+            'is_visible' => 'required|boolean',
+        ]);
+
+        $section = HomeSection::where('section_key', $validated['section_key'])->first();
+        if ($section) {
+            $section->update(['is_visible' => $validated['is_visible']]);
+        } else {
+            HomeSection::create([
+                'section_key' => $validated['section_key'],
+                'name' => ucwords(str_replace('_', ' ', $validated['section_key'])),
+                'is_visible' => $validated['is_visible'],
+            ]);
+        }
+
+        $sectionName = $section ? $section->name : ucwords(str_replace('_', ' ', $validated['section_key']));
+        $stateText = $validated['is_visible'] ? 'is now visible on the live site' : 'is now hidden from the live site';
+        return back()->with('success', "{$sectionName} {$stateText}.");
+    }
+
+    /**
+     * Bulk update sections visibility.
+     */
+    public function updateSectionVisibility(Request $request)
+    {
+        $validated = $request->validate([
+            'sections' => 'required|array',
+            'sections.*.section_key' => 'required|string',
+            'sections.*.is_visible' => 'required|boolean',
+        ]);
+
+        foreach ($validated['sections'] as $item) {
+            HomeSection::updateOrCreate(
+                ['section_key' => $item['section_key']],
+                ['is_visible' => $item['is_visible']]
+            );
+        }
+
+        return back()->with('success', 'Section visibility settings saved successfully.');
     }
 }

@@ -11,6 +11,7 @@ use App\Models\ServiceItem;
 use App\Models\Booking;
 use App\Models\PortfolioItem;
 use App\Models\ContactSetting;
+use App\Models\HomeSection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -85,6 +86,7 @@ class HomeController extends Controller
             'services' => $services,
             'portfolio' => $portfolio,
             'brandLogos' => $brandLogos,
+            'sectionsVisibility' => HomeSection::getVisibilityMap(),
         ]);
     }
 

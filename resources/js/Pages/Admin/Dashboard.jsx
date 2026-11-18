@@ -37,19 +37,106 @@ import {
     MessageSquare,
     Star,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    Eye,
+    EyeOff,
+    Globe,
+    AlertTriangle
 } from 'lucide-react';
 import { getFilmThumbnail, isDirectVideo, parseVideoUrl } from '../../utils/video';
 
-export default function Dashboard({ hero, behindTheFilm, about, teamMembers = [], servicesSetting, services = [], company, bookings = [], portfolio = [], brandLogos = [], stats = {}, workSetting, contactSetting }) {
+export default function Dashboard({ 
+    hero, 
+    behindTheFilm, 
+    about, 
+    teamMembers = [], 
+    servicesSetting, 
+    services = [], 
+    company, 
+    bookings = [], 
+    portfolio = [], 
+    brandLogos = [], 
+    stats = {}, 
+    workSetting, 
+    contactSetting,
+    homeSections = [],
+    sectionsVisibility = {}
+}) {
     const { auth, flash, company: sharedCompany } = usePage().props;
     const activeCompany = company || sharedCompany || {};
     const [activeTab, setActiveTab] = useState('home'); // 'home' | 'work' | 'contact' | 'leads' | 'brands' | 'company'
-    const [homeTab, setHomeTab] = useState('hero'); // 'hero' | 'behind' | 'about' | 'services'
+    const [homeTab, setHomeTab] = useState('hero'); // 'hero' | 'behind' | 'about' | 'services' | 'visibility'
     const [workTab, setWorkTab] = useState('hero'); // 'hero' | 'portfolio'
     const [filterCategory, setFilterCategory] = useState('All');
     const [leadStatusFilter, setLeadStatusFilter] = useState('All');
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+    // Section Visibility State for Live Site
+    const [visibilityMap, setVisibilityMap] = useState(() => ({
+        hero: true,
+        brands: true,
+        featured_films: true,
+        how_it_works: true,
+        behind_the_film: true,
+        about: true,
+        global_offices: true,
+        services: true,
+        cta: true,
+        ...(sectionsVisibility || {}),
+    }));
+
+    React.useEffect(() => {
+        if (sectionsVisibility && Object.keys(sectionsVisibility).length > 0) {
+            setVisibilityMap((prev) => ({
+                ...prev,
+                ...sectionsVisibility,
+            }));
+        }
+    }, [sectionsVisibility]);
+
+    const handleToggleSection = (sectionKey) => {
+        const currentVal = visibilityMap[sectionKey] !== false;
+        const newVal = !currentVal;
+
+        // Optimistic UI update
+        setVisibilityMap((prev) => ({
+            ...prev,
+            [sectionKey]: newVal,
+        }));
+
+        router.post('/admin/sections/toggle', {
+            section_key: sectionKey,
+            is_visible: newVal,
+        }, {
+            preserveScroll: true,
+            onError: () => {
+                // Revert on error
+                setVisibilityMap((prev) => ({
+                    ...prev,
+                    [sectionKey]: currentVal,
+                }));
+            },
+        });
+    };
+
+    const handleBulkToggle = (visible) => {
+        const updated = {};
+        Object.keys(visibilityMap).forEach((k) => {
+            updated[k] = visible;
+        });
+        setVisibilityMap(updated);
+
+        const payload = Object.keys(updated).map((k) => ({
+            section_key: k,
+            is_visible: visible,
+        }));
+
+        router.post('/admin/sections/visibility', {
+            sections: payload,
+        }, {
+            preserveScroll: true,
+        });
+    };
 
     // Pagination for Curated Films
     const [filmCurrentPage, setFilmCurrentPage] = useState(1);
@@ -684,6 +771,7 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                 { id: 'behind', label: 'Behind The Film', icon: Sparkles },
                 { id: 'about', label: 'About & Team', icon: Users, badge: teamMembers.length },
                 { id: 'services', label: 'Other Services', icon: Layers, badge: services.length },
+                { id: 'visibility', label: 'Section Visibility', icon: Eye },
             ]
         },
         { 
@@ -1036,6 +1124,11 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                     >
                                         <Sliders size={14} className={homeTab === 'hero' ? 'text-black' : 'text-[#14f1d9]'} />
                                         <span>Hero Section</span>
+                                        {visibilityMap?.hero === false && (
+                                            <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+                                                Hidden
+                                            </span>
+                                        )}
                                     </button>
 
                                     <button
@@ -1049,6 +1142,11 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                     >
                                         <Sparkles size={14} className={homeTab === 'behind' ? 'text-black' : 'text-[#14f1d9]'} />
                                         <span>Behind The Film</span>
+                                        {visibilityMap?.behind_the_film === false && (
+                                            <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+                                                Hidden
+                                            </span>
+                                        )}
                                     </button>
 
                                     <button
@@ -1062,7 +1160,11 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                     >
                                         <Users size={14} className={homeTab === 'about' ? 'text-black' : 'text-[#f7a838]'} />
                                         <span>About & Team</span>
-                                        {teamMembers.length > 0 && (
+                                        {visibilityMap?.about === false ? (
+                                            <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+                                                Hidden
+                                            </span>
+                                        ) : teamMembers.length > 0 && (
                                             <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
                                                 homeTab === 'about' ? 'bg-black/15 text-black' : 'bg-white/10 text-neutral-300'
                                             }`}>
@@ -1082,7 +1184,11 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                     >
                                         <Layers size={14} className={homeTab === 'services' ? 'text-black' : 'text-[#14f1d9]'} />
                                         <span>Other Services</span>
-                                        {services.length > 0 && (
+                                        {visibilityMap?.services === false ? (
+                                            <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+                                                Hidden
+                                            </span>
+                                        ) : services.length > 0 && (
                                             <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
                                                 homeTab === 'services' ? 'bg-black/15 text-black' : 'bg-white/10 text-neutral-300'
                                             }`}>
@@ -1090,28 +1196,95 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                             </span>
                                         )}
                                     </button>
+
+                                    {/* Section Visibility Manager Tab */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setHomeTab('visibility')}
+                                        className={`cursor-pointer px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 ${
+                                            homeTab === 'visibility'
+                                                ? 'bg-[#14f1d9] text-black shadow-md font-extrabold'
+                                                : 'text-neutral-300 hover:text-white hover:bg-white/5'
+                                        }`}
+                                    >
+                                        <Eye size={14} className={homeTab === 'visibility' ? 'text-black' : 'text-[#14f1d9]'} />
+                                        <span>Section Visibility</span>
+                                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
+                                            homeTab === 'visibility' ? 'bg-black/20 text-black font-black' : 'bg-[#14f1d9]/20 text-[#14f1d9]'
+                                        }`}>
+                                            {Object.values(visibilityMap).filter((v) => v !== false).length}/9 Live
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
 
                             {/* HOME SECTION 1: Hero CMS Editor */}
                             {homeTab === 'hero' && (
                                 <div className="bg-[#101217] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/10">
                                         <div>
                                             <h2 className="text-xl font-bold text-white">Hero Section Live Content</h2>
                                             <p className="text-xs text-neutral-400 mt-1">
                                                 Modifications will directly update the public landing page in real-time.
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={handleHeroSubmit}
-                                            disabled={heroForm.processing}
-                                            className="cursor-pointer bg-[#14f1d9] hover:bg-[#12dac4] text-black font-semibold text-xs sm:text-sm px-6 py-2.5 rounded-full flex items-center gap-1.5 transition shadow disabled:opacity-50 self-start sm:self-auto"
-                                        >
-                                            <Save size={15} />
-                                            <span>Save Changes</span>
-                                        </button>
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            {/* Live Toggle */}
+                                            <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-neutral-900 border border-white/10">
+                                                <Eye size={13} className={visibilityMap?.hero !== false ? 'text-[#14f1d9]' : 'text-neutral-500'} />
+                                                <span className="text-xs font-medium text-neutral-300">Live Status:</span>
+                                                <button
+                                                    type="button"
+                                                    role="switch"
+                                                    aria-checked={visibilityMap?.hero !== false}
+                                                    onClick={() => handleToggleSection('hero')}
+                                                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                        visibilityMap?.hero !== false ? 'bg-[#14f1d9]' : 'bg-neutral-800'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow-lg transition duration-200 ease-in-out ${
+                                                            visibilityMap?.hero !== false ? 'translate-x-4' : 'translate-x-0 bg-neutral-400'
+                                                        }`}
+                                                    />
+                                                </button>
+                                                <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
+                                                    visibilityMap?.hero !== false ? 'text-[#14f1d9]' : 'text-neutral-500'
+                                                }`}>
+                                                    {visibilityMap?.hero !== false ? 'Live' : 'Hidden'}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                onClick={handleHeroSubmit}
+                                                disabled={heroForm.processing}
+                                                className="cursor-pointer bg-[#14f1d9] hover:bg-[#12dac4] text-black font-semibold text-xs sm:text-sm px-6 py-2.5 rounded-full flex items-center gap-1.5 transition shadow disabled:opacity-50 self-start sm:self-auto"
+                                            >
+                                                <Save size={15} />
+                                                <span>Save Changes</span>
+                                            </button>
+                                        </div>
                                     </div>
+
+                                    {/* Warning banner if hidden */}
+                                    {visibilityMap?.hero === false && (
+                                        <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <AlertTriangle size={18} className="text-amber-400 shrink-0" />
+                                                <div>
+                                                    <p className="text-xs font-bold text-amber-200">This section is currently hidden from the live website.</p>
+                                                    <p className="text-[11px] text-amber-200/70">Visitors cannot see this section on the public landing page.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleSection('hero')}
+                                                className="cursor-pointer text-xs font-bold px-3.5 py-1.5 rounded-lg bg-amber-400 text-black hover:bg-amber-300 transition shrink-0"
+                                            >
+                                                Make Live on Site
+                                            </button>
+                                        </div>
+                                    )}
 
                                     <form onSubmit={handleHeroSubmit} className="space-y-6">
                                         {/* Badges */}
@@ -1254,16 +1427,64 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                             </p>
                                         </div>
 
-                                        <button
-                                            onClick={handleBehindSubmit}
-                                            disabled={behindForm.processing}
-                                            type="button"
-                                            className="cursor-pointer bg-[#14f1d9] hover:bg-[#12dac4] text-black font-bold text-xs sm:text-sm px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition shadow-[0_0_20px_rgba(20,241,217,0.3)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 shrink-0"
-                                        >
-                                            <Save size={16} />
-                                            <span>{behindForm.processing ? 'Saving...' : 'Save Changes'}</span>
-                                        </button>
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            {/* Live Toggle */}
+                                            <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-neutral-900 border border-white/10">
+                                                <Eye size={13} className={visibilityMap?.behind_the_film !== false ? 'text-[#14f1d9]' : 'text-neutral-500'} />
+                                                <span className="text-xs font-medium text-neutral-300">Live Status:</span>
+                                                <button
+                                                    type="button"
+                                                    role="switch"
+                                                    aria-checked={visibilityMap?.behind_the_film !== false}
+                                                    onClick={() => handleToggleSection('behind_the_film')}
+                                                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                        visibilityMap?.behind_the_film !== false ? 'bg-[#14f1d9]' : 'bg-neutral-800'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow-lg transition duration-200 ease-in-out ${
+                                                            visibilityMap?.behind_the_film !== false ? 'translate-x-4' : 'translate-x-0 bg-neutral-400'
+                                                        }`}
+                                                    />
+                                                </button>
+                                                <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
+                                                    visibilityMap?.behind_the_film !== false ? 'text-[#14f1d9]' : 'text-neutral-500'
+                                                }`}>
+                                                    {visibilityMap?.behind_the_film !== false ? 'Live' : 'Hidden'}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                onClick={handleBehindSubmit}
+                                                disabled={behindForm.processing}
+                                                type="button"
+                                                className="cursor-pointer bg-[#14f1d9] hover:bg-[#12dac4] text-black font-bold text-xs sm:text-sm px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition shadow-[0_0_20px_rgba(20,241,217,0.3)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 shrink-0"
+                                            >
+                                                <Save size={16} />
+                                                <span>{behindForm.processing ? 'Saving...' : 'Save Changes'}</span>
+                                            </button>
+                                        </div>
                                     </div>
+
+                                    {/* Warning banner if hidden */}
+                                    {visibilityMap?.behind_the_film === false && (
+                                        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <AlertTriangle size={18} className="text-amber-400 shrink-0" />
+                                                <div>
+                                                    <p className="text-xs font-bold text-amber-200">This section is currently hidden from the live website.</p>
+                                                    <p className="text-[11px] text-amber-200/70">Visitors cannot see this section on the public landing page.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleSection('behind_the_film')}
+                                                className="cursor-pointer text-xs font-bold px-3.5 py-1.5 rounded-lg bg-amber-400 text-black hover:bg-amber-300 transition shrink-0"
+                                            >
+                                                Make Live on Site
+                                            </button>
+                                        </div>
+                                    )}
 
                                     <form onSubmit={handleBehindSubmit} className="space-y-8">
                                         {/* SECTION 1: Section Header & Headings */}
@@ -1777,7 +1998,33 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                             </p>
                                         </div>
 
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            {/* Live Toggle */}
+                                            <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-neutral-900 border border-white/10">
+                                                <Eye size={13} className={visibilityMap?.about !== false ? 'text-[#f7a838]' : 'text-neutral-500'} />
+                                                <span className="text-xs font-medium text-neutral-300">Live Status:</span>
+                                                <button
+                                                    type="button"
+                                                    role="switch"
+                                                    aria-checked={visibilityMap?.about !== false}
+                                                    onClick={() => handleToggleSection('about')}
+                                                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                        visibilityMap?.about !== false ? 'bg-[#f7a838]' : 'bg-neutral-800'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow-lg transition duration-200 ease-in-out ${
+                                                            visibilityMap?.about !== false ? 'translate-x-4' : 'translate-x-0 bg-neutral-400'
+                                                        }`}
+                                                    />
+                                                </button>
+                                                <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
+                                                    visibilityMap?.about !== false ? 'text-[#f7a838]' : 'text-neutral-500'
+                                                }`}>
+                                                    {visibilityMap?.about !== false ? 'Live' : 'Hidden'}
+                                                </span>
+                                            </div>
+
                                             <button
                                                 type="button"
                                                 onClick={openAddTeamModal}
@@ -1798,6 +2045,26 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Warning banner if hidden */}
+                                    {visibilityMap?.about === false && (
+                                        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <AlertTriangle size={18} className="text-amber-400 shrink-0" />
+                                                <div>
+                                                    <p className="text-xs font-bold text-amber-200">This section is currently hidden from the live website.</p>
+                                                    <p className="text-[11px] text-amber-200/70">Visitors cannot see the About & Team section on the public landing page.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleSection('about')}
+                                                className="cursor-pointer text-xs font-bold px-3.5 py-1.5 rounded-lg bg-amber-400 text-black hover:bg-amber-300 transition shrink-0"
+                                            >
+                                                Make Live on Site
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* SECTION 1: About Section Headings & Copy Form */}
                                     <form onSubmit={handleAboutSubmit} className="space-y-6">
@@ -2060,7 +2327,33 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                             </p>
                                         </div>
 
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            {/* Live Toggle */}
+                                            <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-neutral-900 border border-white/10">
+                                                <Eye size={13} className={visibilityMap?.services !== false ? 'text-[#14f1d9]' : 'text-neutral-500'} />
+                                                <span className="text-xs font-medium text-neutral-300">Live Status:</span>
+                                                <button
+                                                    type="button"
+                                                    role="switch"
+                                                    aria-checked={visibilityMap?.services !== false}
+                                                    onClick={() => handleToggleSection('services')}
+                                                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                        visibilityMap?.services !== false ? 'bg-[#14f1d9]' : 'bg-neutral-800'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow-lg transition duration-200 ease-in-out ${
+                                                            visibilityMap?.services !== false ? 'translate-x-4' : 'translate-x-0 bg-neutral-400'
+                                                        }`}
+                                                    />
+                                                </button>
+                                                <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
+                                                    visibilityMap?.services !== false ? 'text-[#14f1d9]' : 'text-neutral-500'
+                                                }`}>
+                                                    {visibilityMap?.services !== false ? 'Live' : 'Hidden'}
+                                                </span>
+                                            </div>
+
                                             <button
                                                 type="button"
                                                 onClick={openAddServiceModal}
@@ -2081,6 +2374,26 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Warning banner if hidden */}
+                                    {visibilityMap?.services === false && (
+                                        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <AlertTriangle size={18} className="text-amber-400 shrink-0" />
+                                                <div>
+                                                    <p className="text-xs font-bold text-amber-200">This section is currently hidden from the live website.</p>
+                                                    <p className="text-[11px] text-amber-200/70">Visitors cannot see the Other Services section on the public landing page.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleSection('services')}
+                                                className="cursor-pointer text-xs font-bold px-3.5 py-1.5 rounded-lg bg-amber-400 text-black hover:bg-amber-300 transition shrink-0"
+                                            >
+                                                Make Live on Site
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* SECTION 1: Services Section Headings Form */}
                                     <form onSubmit={handleServicesSettingSubmit} className="space-y-6">
@@ -2284,6 +2597,293 @@ export default function Dashboard({ hero, behindTheFilm, about, teamMembers = []
                                                 </div>
                                             ))}
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* HOME SECTION 5: SECTION VISIBILITY CMS (LIVE TOGGLES) */}
+                            {homeTab === 'visibility' && (
+                                <div className="space-y-8 animate-fadeIn">
+                                    {/* Header */}
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="w-2 h-2 rounded-full bg-[#14f1d9] shadow-[0_0_8px_#14f1d9]"></span>
+                                                <span className="text-xs font-bold uppercase tracking-wider text-[#14f1d9]">
+                                                    Home Page Section Controls
+                                                </span>
+                                            </div>
+                                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                                                Landing Page Section Visibility
+                                            </h2>
+                                            <p className="text-sm text-neutral-400 mt-1">
+                                                Toggle individual sections on or off to instantly show or hide them from the live public website.
+                                            </p>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleBulkToggle(true)}
+                                                className="cursor-pointer bg-white/10 hover:bg-white/15 text-white font-semibold text-xs px-4 py-2.5 rounded-full flex items-center gap-2 transition border border-white/10"
+                                            >
+                                                <Eye size={14} className="text-[#14f1d9]" />
+                                                <span>Make All Live</span>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleBulkToggle(false)}
+                                                className="cursor-pointer bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold text-xs px-4 py-2.5 rounded-full flex items-center gap-2 transition border border-white/5"
+                                            >
+                                                <EyeOff size={14} className="text-neutral-400" />
+                                                <span>Hide All</span>
+                                            </button>
+
+                                            <a
+                                                href="/"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="cursor-pointer bg-[#14f1d9] hover:bg-[#12dac4] text-black font-bold text-xs px-5 py-2.5 rounded-full flex items-center gap-2 transition shadow-[0_0_20px_rgba(20,241,217,0.3)] shrink-0"
+                                            >
+                                                <ExternalLink size={14} />
+                                                <span>View Live Site</span>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    {/* Summary Stats Banner */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div className="bg-[#101217] border border-white/10 rounded-2xl p-5 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-xs text-neutral-400 font-medium">Live Sections</span>
+                                                <p className="text-2xl font-black text-[#14f1d9] mt-1">
+                                                    {Object.values(visibilityMap).filter((v) => v !== false).length}
+                                                    <span className="text-sm text-neutral-500 font-normal"> / 9</span>
+                                                </p>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-xl bg-[#14f1d9]/10 border border-[#14f1d9]/20 flex items-center justify-center text-[#14f1d9]">
+                                                <Eye size={20} />
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-[#101217] border border-white/10 rounded-2xl p-5 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-xs text-neutral-400 font-medium">Hidden Sections</span>
+                                                <p className="text-2xl font-black text-neutral-300 mt-1">
+                                                    {Object.values(visibilityMap).filter((v) => v === false).length}
+                                                    <span className="text-sm text-neutral-500 font-normal"> / 9</span>
+                                                </p>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400">
+                                                <EyeOff size={20} />
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-[#101217] border border-white/10 rounded-2xl p-5 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-xs text-neutral-400 font-medium">Sync Status</span>
+                                                <p className="text-sm font-bold text-white mt-2 flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-[#14f1d9] animate-pulse"></span>
+                                                    <span>Instant Live Reflection</span>
+                                                </p>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#14f1d9]">
+                                                <CheckCircle2 size={20} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 9 Sections Grid */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                        {[
+                                            {
+                                                key: 'hero',
+                                                order: 1,
+                                                name: 'Hero Section',
+                                                category: 'Top Impression',
+                                                description: 'Headline ("AI-powered video. Human-led creative."), showreel video stream, badges and call-to-action buttons.',
+                                                icon: Sliders,
+                                                editTab: 'hero',
+                                            },
+                                            {
+                                                key: 'brands',
+                                                order: 2,
+                                                name: 'Client Brands Strip',
+                                                category: 'Social Proof',
+                                                description: 'Continuous horizontal scrolling ticker with client logos (SriLankan Airlines, Coca-Cola, Nestlé, etc.).',
+                                                icon: Building2,
+                                                mainTab: 'brands',
+                                            },
+                                            {
+                                                key: 'featured_films',
+                                                order: 3,
+                                                name: 'Featured Films Grid',
+                                                category: 'Showcase',
+                                                description: 'Curated portfolio showcase cards with sector tags, duration badges, and full video popup player modal.',
+                                                icon: Film,
+                                                mainTab: 'work',
+                                            },
+                                            {
+                                                key: 'how_it_works',
+                                                order: 4,
+                                                name: 'How It Works',
+                                                category: 'Methodology',
+                                                description: 'Three-stage creative pipeline: Human sketch, AI acceleration, and Human finishing touch.',
+                                                icon: Sparkles,
+                                            },
+                                            {
+                                                key: 'behind_the_film',
+                                                order: 5,
+                                                name: 'Behind The Film',
+                                                category: 'Craft Demonstration',
+                                                description: 'Interactive dual comparison: initial human sketch/storyboard vs finished AI-accelerated film frame.',
+                                                icon: Video,
+                                                editTab: 'behind',
+                                            },
+                                            {
+                                                key: 'about',
+                                                order: 6,
+                                                name: 'About & Leadership Team',
+                                                category: 'Agency Narrative',
+                                                description: 'Global reach narrative paragraph, markets worked in, and leadership team photo cards grid.',
+                                                icon: Users,
+                                                editTab: 'about',
+                                            },
+                                            {
+                                                key: 'global_offices',
+                                                order: 7,
+                                                name: 'Global Offices & Network Map',
+                                                category: 'International Scale',
+                                                description: 'Interactive 360° global network canvas map with pulsing branch nodes (Colombo HQ, Dubai, Doha, London, etc.).',
+                                                icon: Globe,
+                                            },
+                                            {
+                                                key: 'services',
+                                                order: 8,
+                                                name: 'Our Other Services',
+                                                category: 'Full Capability',
+                                                description: 'Brand & creative strategy, digital performance media, and experiential event offering cards.',
+                                                icon: Layers,
+                                                editTab: 'services',
+                                            },
+                                            {
+                                                key: 'cta',
+                                                order: 9,
+                                                name: 'Bottom CTA Banner',
+                                                category: 'Conversion',
+                                                description: 'High-contrast bottom call-to-action banner inviting briefs and creative call booking.',
+                                                icon: MessageSquare,
+                                            },
+                                        ].map((sec) => {
+                                            const isVisible = visibilityMap[sec.key] !== false;
+                                            const SecIcon = sec.icon;
+
+                                            return (
+                                                <div
+                                                    key={sec.key}
+                                                    className={`rounded-2xl p-6 border transition-all duration-300 flex flex-col justify-between ${
+                                                        isVisible
+                                                            ? 'bg-[#101217] border-white/10 hover:border-white/20 shadow-xl'
+                                                            : 'bg-[#0b0c10]/60 border-white/5 opacity-75'
+                                                    }`}
+                                                >
+                                                    <div>
+                                                        {/* Top Row: Category + Order Badge + Toggle Switch */}
+                                                        <div className="flex items-center justify-between gap-3 mb-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 px-2 py-0.5 rounded bg-white/5 border border-white/5">
+                                                                    #{sec.order} {sec.category}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Toggle Switch */}
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    role="switch"
+                                                                    aria-checked={isVisible}
+                                                                    onClick={() => handleToggleSection(sec.key)}
+                                                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                                        isVisible ? 'bg-[#14f1d9] shadow-[0_0_12px_rgba(20,241,217,0.4)]' : 'bg-neutral-800'
+                                                                    }`}
+                                                                >
+                                                                    <span
+                                                                        aria-hidden="true"
+                                                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-black shadow-lg transition duration-200 ease-in-out ${
+                                                                            isVisible ? 'translate-x-5' : 'translate-x-0 bg-neutral-400'
+                                                                        }`}
+                                                                    />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Section Title & Icon */}
+                                                        <div className="flex items-start gap-3 mb-2.5">
+                                                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                                                                isVisible
+                                                                    ? 'bg-[#14f1d9]/10 border-[#14f1d9]/25 text-[#14f1d9]'
+                                                                    : 'bg-white/5 border-white/10 text-neutral-500'
+                                                            }`}>
+                                                                <SecIcon size={18} />
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="text-base font-bold text-white tracking-tight">
+                                                                    {sec.name}
+                                                                </h3>
+                                                                <span className={`inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider mt-0.5 ${
+                                                                    isVisible ? 'text-[#14f1d9]' : 'text-neutral-500'
+                                                                }`}>
+                                                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                                                        isVisible ? 'bg-[#14f1d9] shadow-[0_0_6px_#14f1d9]' : 'bg-neutral-600'
+                                                                    }`} />
+                                                                    {isVisible ? 'Live on Site' : 'Hidden from Site'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Description */}
+                                                        <p className="text-xs text-neutral-400 leading-relaxed mt-2 mb-4">
+                                                            {sec.description}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Card Bottom Link / Action */}
+                                                    <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                                                        {sec.editTab ? (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setHomeTab(sec.editTab)}
+                                                                className="cursor-pointer text-xs font-semibold text-neutral-300 hover:text-[#14f1d9] transition flex items-center gap-1.5"
+                                                            >
+                                                                <span>Edit Content</span>
+                                                                <ChevronRight size={13} />
+                                                            </button>
+                                                        ) : sec.mainTab ? (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setActiveTab(sec.mainTab);
+                                                                    if (sec.mainTab === 'work') setWorkTab('portfolio');
+                                                                }}
+                                                                className="cursor-pointer text-xs font-semibold text-neutral-300 hover:text-[#14f1d9] transition flex items-center gap-1.5"
+                                                            >
+                                                                <span>Manage In {sec.mainTab === 'brands' ? 'Brand Partners' : 'Work CMS'}</span>
+                                                                <ChevronRight size={13} />
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-[11px] text-neutral-500">
+                                                                Theme component
+                                                            </span>
+                                                        )}
+
+                                                        <span className="text-[11px] font-mono text-neutral-500">
+                                                            id: #{sec.key}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}

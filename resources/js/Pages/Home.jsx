@@ -15,7 +15,17 @@ import BookCallModal from '../Components/BookCallModal';
 import WatchWorkModal from '../Components/WatchWorkModal';
 import { Sparkles, ArrowRight, Play, CheckCircle2 } from 'lucide-react';
 
-export default function Home({ hero, behindTheFilm, about, teamMembers, servicesSetting, services, portfolio, brandLogos }) {
+export default function Home({
+    hero,
+    behindTheFilm,
+    about,
+    teamMembers,
+    servicesSetting,
+    services,
+    portfolio,
+    brandLogos,
+    sectionsVisibility = {},
+}) {
     const { flash } = usePage().props;
     const [bookModalOpen, setBookModalOpen] = useState(false);
     const [watchModalOpen, setWatchModalOpen] = useState(false);
@@ -45,41 +55,59 @@ export default function Home({ hero, behindTheFilm, about, teamMembers, services
             {/* Main Content */}
             <main className="flex-1">
                 {/* 1st Section: Hero Section */}
-                <Hero
-                    hero={hero}
-                    onBookCall={() => setBookModalOpen(true)}
-                />
+                {sectionsVisibility?.hero !== false && (
+                    <Hero
+                        hero={hero}
+                        onBookCall={() => setBookModalOpen(true)}
+                    />
+                )}
 
                 {/* 2nd Section: Trusted by leading brands (logo strip) */}
-                <CreatedFor logos={brandLogos} />
+                {sectionsVisibility?.brands !== false && (
+                    <CreatedFor logos={brandLogos} />
+                )}
 
                 {/* 3rd Section: FEATURED FILMS ("Our best work, for brands you know.") */}
-                <FeaturedFilms
-                    portfolio={portfolio}
-                    onFilmClick={(film) => {
-                        setSelectedFilm(film);
-                        setWatchModalOpen(true);
-                    }}
-                    onEnterCreativeWorld={() => setBookModalOpen(true)}
-                />
+                {sectionsVisibility?.featured_films !== false && (
+                    <FeaturedFilms
+                        portfolio={portfolio}
+                        onFilmClick={(film) => {
+                            setSelectedFilm(film);
+                            setWatchModalOpen(true);
+                        }}
+                        onEnterCreativeWorld={() => setBookModalOpen(true)}
+                    />
+                )}
 
                 {/* 4th Section: HOW IT WORKS ("People decide. AI accelerates. People finish.") */}
-                <HowItWorks />
+                {sectionsVisibility?.how_it_works !== false && (
+                    <HowItWorks />
+                )}
 
                 {/* 5th Section: BEHIND THE FILM ("From human sketch to finished film.") */}
-                <BehindTheFilm setting={behindTheFilm} />
+                {sectionsVisibility?.behind_the_film !== false && (
+                    <BehindTheFilm setting={behindTheFilm} />
+                )}
 
                 {/* 6th Section: ABOUT ("Built for global brands.") */}
-                <About about={about} teamMembers={teamMembers} />
+                {sectionsVisibility?.about !== false && (
+                    <About about={about} teamMembers={teamMembers} />
+                )}
 
                 {/* 7th Section: GLOBAL OFFICES (Interactive Map & Regional Presences) */}
-                <GlobalOffices />
+                {sectionsVisibility?.global_offices !== false && (
+                    <GlobalOffices />
+                )}
 
                 {/* 8th Section: OUR OTHER SERVICES ("Beyond video, we support the wider brand.") */}
-                <OtherServices setting={servicesSetting} services={services} />
+                {sectionsVisibility?.services !== false && (
+                    <OtherServices setting={servicesSetting} services={services} />
+                )}
 
-                {/* 8th Section: HIGH-CONTRAST CTA ("From brief to big idea in 72 hours.") */}
-                <CtaBanner onBookCall={() => setBookModalOpen(true)} />
+                {/* 9th Section: HIGH-CONTRAST CTA ("From brief to big idea in 72 hours.") */}
+                {sectionsVisibility?.cta !== false && (
+                    <CtaBanner onBookCall={() => setBookModalOpen(true)} />
+                )}
             </main>
 
             {/* 3. Footer (Matching Exact Screenshot) */}

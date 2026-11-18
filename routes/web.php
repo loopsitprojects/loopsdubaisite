@@ -59,6 +59,10 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/services/{serviceItem}', [AdminController::class, 'updateServiceItem'])->name('admin.services.update');
     Route::delete('/services/{serviceItem}', [AdminController::class, 'deleteServiceItem'])->name('admin.services.delete');
 
+    // Home Page Sections Visibility Toggles
+    Route::post('/sections/toggle', [AdminController::class, 'toggleSectionVisibility'])->name('admin.sections.toggle');
+    Route::post('/sections/visibility', [AdminController::class, 'updateSectionVisibility'])->name('admin.sections.update');
+
     // Work Page Hero & Header CMS
     Route::post('/work-settings', [AdminController::class, 'updateWorkSetting'])->name('admin.workSetting.update');
 
