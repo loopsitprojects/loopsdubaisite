@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Head, useForm, usePage, Link, router } from '@inertiajs/react';
 import { appUrl } from '../../utils/url';
 import { 
@@ -41,13 +41,15 @@ import {
     Eye,
     EyeOff,
     Globe,
-    AlertTriangle
+    AlertTriangle,
+    RotateCcw
 } from 'lucide-react';
 import { getFilmThumbnail, isDirectVideo, parseVideoUrl } from '../../utils/video';
 
 export default function Dashboard({ 
     hero, 
     behindTheFilm, 
+    storyboardFrames = [],
     about, 
     teamMembers = [], 
     servicesSetting, 
@@ -151,6 +153,84 @@ export default function Dashboard({
     const [finishFilePreview, setFinishFilePreview] = useState(null);
     const conceptFileInputRef = useRef(null);
     const finishFileInputRef = useRef(null);
+
+    // Storyboard Frames state & handlers
+    const [localStoryboardFrames, setLocalStoryboardFrames] = useState(storyboardFrames || []);
+    const [isUploadingFrames, setIsUploadingFrames] = useState(false);
+    const [adminPreviewIndex, setAdminPreviewIndex] = useState(0);
+    const storyboardUploadInputRef = useRef(null);
+
+    useEffect(() => {
+        setLocalStoryboardFrames(storyboardFrames || []);
+    }, [storyboardFrames]);
+
+    const handleUploadStoryboardFiles = (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('images[]', files[i]);
+        }
+
+        setIsUploadingFrames(true);
+        router.post('/admin/storyboard-frames', formData, {
+            preserveScroll: true,
+            forceFormData: true,
+            onFinish: () => {
+                setIsUploadingFrames(false);
+                if (storyboardUploadInputRef.current) {
+                    storyboardUploadInputRef.current.value = '';
+                }
+            },
+        });
+    };
+
+    const handleMoveFrameUp = (index) => {
+        if (index === 0) return;
+        const newFrames = [...localStoryboardFrames];
+        const temp = newFrames[index - 1];
+        newFrames[index - 1] = newFrames[index];
+        newFrames[index] = temp;
+        setLocalStoryboardFrames(newFrames);
+
+        router.post('/admin/storyboard-frames/reorder', {
+            order: newFrames.map((f) => f.id),
+        }, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleMoveFrameDown = (index) => {
+        if (index >= localStoryboardFrames.length - 1) return;
+        const newFrames = [...localStoryboardFrames];
+        const temp = newFrames[index + 1];
+        newFrames[index + 1] = newFrames[index];
+        newFrames[index] = temp;
+        setLocalStoryboardFrames(newFrames);
+
+        router.post('/admin/storyboard-frames/reorder', {
+            order: newFrames.map((f) => f.id),
+        }, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleDeleteStoryboardFrame = (frameId, frameTitle) => {
+        if (confirm(`Are you sure you want to remove "${frameTitle || 'this frame'}" from the storyboard?`)) {
+            router.delete(`/admin/storyboard-frames/${frameId}`, {
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const handleResetStoryboard = () => {
+        if (confirm('Restore the storyboard back to the original 17 default shots? This will replace current custom frames.')) {
+            router.post('/admin/storyboard-frames/reset', {}, {
+                preserveScroll: true,
+            });
+        }
+    };
 
     // Film Thumbnail upload / URL states
     const [filmThumbPreview, setFilmThumbPreview] = useState(null);
@@ -1564,7 +1644,7 @@ export default function Dashboard({
                                                             <h3 className="text-base font-bold text-white">Left Card: Human Concept</h3>
                                                         </div>
                                                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f7a838]/10 text-[#f7a838] border border-[#f7a838]/20">
-                                                            Concept Frame
+                                                            Storyboard Sequence ({localStoryboardFrames.length} Frames)
                                                         </span>
                                                     </div>
 
@@ -1601,89 +1681,209 @@ export default function Dashboard({
                                                         </span>
                                                     </div>
 
-                                                    <div>
-                                                        <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
-                                                            Image File Upload or URL
-                                                        </label>
-                                                        <div className="space-y-3">
-                                                            <div className="flex items-center gap-3">
+                                                    {/* Storyboard Frames Gallery Header & Actions */}
+                                                    <div className="pt-2 border-t border-white/10">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                                                                        Storyboard Frames List
+                                                                    </span>
+                                                                    <span className="px-2 py-0.5 rounded-full bg-[#f7a838]/15 text-[#f7a838] text-[10px] font-mono font-bold">
+                                                                        {localStoryboardFrames.length} {localStoryboardFrames.length === 1 ? 'Shot' : 'Shots'}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-[11px] text-neutral-400 mt-0.5">
+                                                                    Rearrange order with ▲ ▼ arrows, delete shots, or upload new frames.
+                                                                </p>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-2">
                                                                 <input
                                                                     type="file"
-                                                                    ref={conceptFileInputRef}
-                                                                    onChange={handleConceptFileChange}
+                                                                    ref={storyboardUploadInputRef}
+                                                                    onChange={handleUploadStoryboardFiles}
                                                                     accept="image/png,image/jpeg,image/webp,image/gif"
+                                                                    multiple
                                                                     className="hidden"
                                                                 />
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => conceptFileInputRef.current?.click()}
-                                                                    className="cursor-pointer px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold flex items-center gap-2 transition"
+                                                                    onClick={() => storyboardUploadInputRef.current?.click()}
+                                                                    disabled={isUploadingFrames}
+                                                                    className="cursor-pointer px-3 py-1.5 rounded-xl bg-[#f7a838] hover:bg-[#f7a838]/90 text-black text-xs font-bold flex items-center gap-1.5 transition shadow-[0_0_12px_rgba(247,168,56,0.3)] disabled:opacity-50"
                                                                 >
-                                                                    <UploadCloud size={15} className="text-[#f7a838]" />
-                                                                    <span>Upload Image File</span>
+                                                                    <UploadCloud size={14} />
+                                                                    <span>{isUploadingFrames ? 'Uploading...' : 'Upload Frames'}</span>
                                                                 </button>
 
-                                                                {(conceptFilePreview || behindForm.data.concept_image_url) && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={handleRemoveConceptImage}
-                                                                        className="cursor-pointer text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 transition"
-                                                                    >
-                                                                        <Trash2 size={13} />
-                                                                        <span>Reset to Placeholder</span>
-                                                                    </button>
-                                                                )}
-                                                            </div>
-
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="text"
-                                                                    value={behindForm.data.concept_image_url}
-                                                                    onChange={(e) => {
-                                                                        behindForm.setData('concept_image_url', e.target.value);
-                                                                        setConceptFilePreview(null);
-                                                                    }}
-                                                                    placeholder="Or paste external image URL: https://..."
-                                                                    className="w-full px-4 py-2 rounded-xl bg-neutral-900 border border-white/10 text-neutral-300 text-xs focus:outline-none focus:border-[#f7a838] transition font-mono"
-                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleResetStoryboard}
+                                                                    className="cursor-pointer px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white text-xs flex items-center gap-1.5 transition"
+                                                                    title="Reset to default 17 Lily Lanka storyboard shots"
+                                                                >
+                                                                    <RotateCcw size={13} className="text-neutral-400" />
+                                                                    <span className="hidden sm:inline">Reset Defaults</span>
+                                                                </button>
                                                             </div>
                                                         </div>
+
+                                                        {/* Frames Scrollable Sequence List */}
+                                                        {localStoryboardFrames.length === 0 ? (
+                                                            <div className="p-8 rounded-xl border border-dashed border-white/15 bg-neutral-900/50 text-center space-y-2">
+                                                                <ImageIcon size={28} className="mx-auto text-neutral-600" />
+                                                                <p className="text-xs text-neutral-400">No storyboard frames found.</p>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => storyboardUploadInputRef.current?.click()}
+                                                                    className="cursor-pointer text-xs text-[#f7a838] hover:underline font-semibold"
+                                                                >
+                                                                    Upload images or click Reset Defaults
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="max-h-72 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                                                                {localStoryboardFrames.map((frame, index) => {
+                                                                    const isSelected = adminPreviewIndex === index;
+                                                                    const imgSrc = frame.image_url || frame.url;
+                                                                    return (
+                                                                        <div
+                                                                            key={frame.id || frame.shot || index}
+                                                                            onClick={() => setAdminPreviewIndex(index)}
+                                                                            className={`cursor-pointer group flex items-center justify-between p-2 rounded-xl border transition ${
+                                                                                isSelected
+                                                                                    ? 'bg-[#f7a838]/10 border-[#f7a838]/40 shadow-sm'
+                                                                                    : 'bg-neutral-900/80 hover:bg-neutral-800/80 border-white/5 hover:border-white/15'
+                                                                            }`}
+                                                                        >
+                                                                            {/* Left: Shot # & Thumbnail */}
+                                                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                                                <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/60 text-[#f7a838] border border-[#f7a838]/30">
+                                                                                    #{String(index + 1).padStart(2, '0')}
+                                                                                </span>
+
+                                                                                <div className="w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden bg-black border border-white/10 flex-shrink-0">
+                                                                                    <img
+                                                                                        src={appUrl(imgSrc)}
+                                                                                        alt={frame.title || `Shot ${index + 1}`}
+                                                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                                        loading="lazy"
+                                                                                    />
+                                                                                </div>
+
+                                                                                <div className="min-w-0 pr-2">
+                                                                                    <span className="text-xs font-semibold text-white truncate block">
+                                                                                        {frame.title || `Shot ${index + 1}`}
+                                                                                    </span>
+                                                                                    <span className="text-[10px] text-neutral-400 truncate block">
+                                                                                        {frame.scene || frame.caption || (imgSrc.split('/').pop())}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Right: Rearrange Up/Down & Delete */}
+                                                                            <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                                                {/* Move Up */}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => handleMoveFrameUp(index)}
+                                                                                    disabled={index === 0}
+                                                                                    title="Move up in sequence"
+                                                                                    className="cursor-pointer w-7 h-7 rounded-lg bg-white/5 hover:bg-[#f7a838]/20 hover:text-[#f7a838] border border-white/10 text-neutral-300 flex items-center justify-center transition disabled:opacity-25 disabled:pointer-events-none"
+                                                                                >
+                                                                                    <ArrowUp size={13} />
+                                                                                </button>
+
+                                                                                {/* Move Down */}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => handleMoveFrameDown(index)}
+                                                                                    disabled={index === localStoryboardFrames.length - 1}
+                                                                                    title="Move down in sequence"
+                                                                                    className="cursor-pointer w-7 h-7 rounded-lg bg-white/5 hover:bg-[#f7a838]/20 hover:text-[#f7a838] border border-white/10 text-neutral-300 flex items-center justify-center transition disabled:opacity-25 disabled:pointer-events-none"
+                                                                                >
+                                                                                    <ArrowDown size={13} />
+                                                                                </button>
+
+                                                                                {/* Delete Frame */}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => handleDeleteStoryboardFrame(frame.id, frame.title || `Shot ${index + 1}`)}
+                                                                                    title="Delete frame"
+                                                                                    className="cursor-pointer w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 flex items-center justify-center transition ml-1"
+                                                                                >
+                                                                                    <Trash2 size={13} />
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                {/* Card Preview Box */}
+                                                {/* Interactive Card Preview Box */}
                                                 <div className="mt-6 pt-5 border-t border-white/10">
-                                                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block mb-2">
-                                                        Card Preview
-                                                    </span>
-                                                    <div className="w-full aspect-video rounded-xl border border-white/10 bg-[#101217] flex items-center justify-center overflow-hidden relative">
-                                                        {conceptFilePreview ? (
-                                                            <img
-                                                                src={conceptFilePreview}
-                                                                alt="Concept Preview"
-                                                                className="w-full h-full object-cover rounded-lg"
-                                                            />
-                                                        ) : behindForm.data.concept_image_url && !behindForm.data.concept_image_url.includes('storyboard') ? (
-                                                            <img
-                                                                src={appUrl(behindForm.data.concept_image_url)}
-                                                                alt="Concept Preview"
-                                                                className="w-full h-full object-cover rounded-lg"
-                                                            />
-                                                        ) : (
-                                                            <div className="relative w-full h-full">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block">
+                                                            Live Sequence Preview
+                                                        </span>
+                                                        {localStoryboardFrames.length > 0 && (
+                                                            <span className="text-[11px] font-mono text-neutral-400">
+                                                                Shot {String(adminPreviewIndex + 1).padStart(2, '0')} / {String(localStoryboardFrames.length).padStart(2, '0')}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="w-full aspect-video rounded-xl border border-white/10 bg-[#101217] flex items-center justify-center overflow-hidden relative group/prev">
+                                                        {localStoryboardFrames.length > 0 ? (
+                                                            <>
                                                                 <img
-                                                                    src={appUrl('/images/storyboard/lily-lanka/shot_01.webp')}
-                                                                    alt="Storyboard Slider"
-                                                                    className="w-full h-full object-cover rounded-lg"
+                                                                    src={appUrl(localStoryboardFrames[adminPreviewIndex]?.image_url || localStoryboardFrames[adminPreviewIndex]?.url || localStoryboardFrames[0]?.image_url)}
+                                                                    alt="Storyboard Preview"
+                                                                    className="w-full h-full object-cover rounded-lg transition-transform duration-300"
                                                                 />
-                                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                                    <span className="px-2.5 py-1 rounded-full bg-[#f7a838]/20 text-[#f7a838] border border-[#f7a838]/40 text-xs font-semibold backdrop-blur-md">
-                                                                        Storyboard Slider (17 Frames)
-                                                                    </span>
+                                                                <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-semibold text-[#f7a838]">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-[#f7a838] animate-pulse" />
+                                                                    <span>STORYBOARD PREVIEW</span>
                                                                 </div>
-                                                                <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono">
-                                                                    17 Shots
+
+                                                                <span className="absolute bottom-2.5 right-2.5 z-20 px-2 py-0.5 rounded bg-black/80 backdrop-blur-md text-white text-[10px] font-mono border border-white/10">
+                                                                    Shot {String(adminPreviewIndex + 1).padStart(2, '0')} / {String(localStoryboardFrames.length).padStart(2, '0')}
                                                                 </span>
+
+                                                                {localStoryboardFrames.length > 1 && (
+                                                                    <>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setAdminPreviewIndex((prev) => (prev - 1 + localStoryboardFrames.length) % localStoryboardFrames.length);
+                                                                            }}
+                                                                            className="cursor-pointer absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition opacity-80 group-hover/prev:opacity-100"
+                                                                            title="Previous shot"
+                                                                        >
+                                                                            <ChevronLeft size={15} />
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setAdminPreviewIndex((prev) => (prev + 1) % localStoryboardFrames.length);
+                                                                            }}
+                                                                            className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition opacity-80 group-hover/prev:opacity-100"
+                                                                            title="Next shot"
+                                                                        >
+                                                                            <ChevronRight size={15} />
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <div className="p-6 text-center text-xs text-neutral-500 font-mono">
+                                                                {behindForm.data.concept_placeholder_text || '[Storyboard / reference frames]'}
                                                             </div>
                                                         )}
                                                     </div>

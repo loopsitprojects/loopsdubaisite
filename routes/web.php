@@ -63,6 +63,12 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/sections/toggle', [AdminController::class, 'toggleSectionVisibility'])->name('admin.sections.toggle');
     Route::post('/sections/visibility', [AdminController::class, 'updateSectionVisibility'])->name('admin.sections.update');
 
+    // Storyboard Frames CMS (Upload, Reorder, Delete, Reset)
+    Route::post('/storyboard-frames', [AdminController::class, 'storeStoryboardFrame'])->name('admin.storyboard.store');
+    Route::post('/storyboard-frames/reorder', [AdminController::class, 'reorderStoryboardFrames'])->name('admin.storyboard.reorder');
+    Route::post('/storyboard-frames/reset', [AdminController::class, 'resetStoryboardFrames'])->name('admin.storyboard.reset');
+    Route::delete('/storyboard-frames/{storyboardFrame}', [AdminController::class, 'deleteStoryboardFrame'])->name('admin.storyboard.delete');
+
     // Work Page Hero & Header CMS
     Route::post('/work-settings', [AdminController::class, 'updateWorkSetting'])->name('admin.workSetting.update');
 

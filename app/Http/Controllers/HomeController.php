@@ -12,6 +12,7 @@ use App\Models\Booking;
 use App\Models\PortfolioItem;
 use App\Models\ContactSetting;
 use App\Models\HomeSection;
+use App\Models\StoryboardFrame;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -76,10 +77,12 @@ class HomeController extends Controller
             $portfolio = PortfolioItem::orderBy('sort_order')->limit(PortfolioItem::FEATURED_LIMIT)->get();
         }
         $brandLogos = \App\Models\BrandLogo::where('is_active', true)->orderBy('sort_order')->get();
+        $storyboardFrames = StoryboardFrame::active()->ordered()->get();
 
         return Inertia::render('Home', [
             'hero' => $hero,
             'behindTheFilm' => $behindTheFilm,
+            'storyboardFrames' => $storyboardFrames,
             'about' => $about,
             'teamMembers' => $teamMembers,
             'servicesSetting' => $servicesSetting,

@@ -24,6 +24,7 @@ export default function Home({
     services,
     portfolio,
     brandLogos,
+    storyboardFrames = [],
     sectionsVisibility = {},
 }) {
     const { flash } = usePage().props;
@@ -86,7 +87,10 @@ export default function Home({
 
                 {/* 5th Section: BEHIND THE FILM ("From human sketch to finished film.") */}
                 {sectionsVisibility?.behind_the_film !== false && (
-                    <BehindTheFilm setting={behindTheFilm} />
+                    <BehindTheFilm
+                        setting={behindTheFilm}
+                        storyboardFrames={storyboardFrames}
+                    />
                 )}
 
                 {/* 6th Section: ABOUT ("Built for global brands.") */}

@@ -15,6 +15,7 @@ use App\Models\CompanySetting;
 use App\Models\WorkSetting;
 use App\Models\ContactSetting;
 use App\Models\HomeSection;
+use App\Models\StoryboardFrame;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -126,9 +127,12 @@ class AdminController extends Controller
             $homeSections = HomeSection::orderBy('sort_order')->get();
         }
 
+        $storyboardFrames = StoryboardFrame::ordered()->get();
+
         return Inertia::render('Admin/Dashboard', [
             'hero' => $hero,
             'behindTheFilm' => $behindTheFilm,
+            'storyboardFrames' => $storyboardFrames,
             'about' => $about,
             'teamMembers' => $teamMembers,
             'servicesSetting' => $servicesSetting,
@@ -470,6 +474,185 @@ class AdminController extends Controller
         }
 
         return back()->with('success', 'Behind The Film section updated successfully!');
+    }
+
+    /**
+     * Store one or multiple new storyboard frames.
+     */
+    public function storeStoryboardFrame(Request $request)
+    {
+        $validated = $request->validate([
+            'images' => 'nullable|array',
+            'images.*' => 'file|mimes:png,jpg,jpeg,webp,gif|max:10240',
+            'image_file' => 'nullable|file|mimes:png,jpg,jpeg,webp,gif|max:10240',
+            'image_url' => 'nullable|string|max:500',
+            'title' => 'nullable|string|max:255',
+            'caption' => 'nullable|string|max:1000',
+            'scene' => 'nullable|string|max:500',
+            'vo' => 'nullable|string|max:500',
+        ]);
+
+        $uploadDir = public_path('uploads/storyboard');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $highestOrder = (int) StoryboardFrame::max('sort_order');
+
+        // Case 1: Multiple images uploaded
+        if ($request->hasFile('images')) {
+            $files = $request->file('images');
+            $createdCount = 0;
+            foreach ($files as $file) {
+                $highestOrder++;
+                $extension = $file->getClientOriginalExtension() ?: 'webp';
+                $filename = 'shot_' . time() . '_' . \Illuminate\Support\Str::random(6) . '.' . $extension;
+                $file->move($uploadDir, $filename);
+
+                $origName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $title = !empty($origName) ? ucwords(str_replace(['_', '-'], ' ', $origName)) : ('Shot ' . str_pad($highestOrder, 2, '0', STR_PAD_LEFT));
+
+                StoryboardFrame::create([
+                    'title' => $title,
+                    'image_url' => '/uploads/storyboard/' . $filename,
+                    'caption' => null,
+                    'scene' => null,
+                    'vo' => null,
+                    'sort_order' => $highestOrder,
+                    'is_active' => true,
+                ]);
+                $createdCount++;
+            }
+            return back()->with('success', "{$createdCount} storyboard frame(s) uploaded successfully.");
+        }
+
+        // Case 2: Single file uploaded
+        if ($request->hasFile('image_file')) {
+            $highestOrder++;
+            $file = $request->file('image_file');
+            $extension = $file->getClientOriginalExtension() ?: 'webp';
+            $filename = 'shot_' . time() . '_' . \Illuminate\Support\Str::random(6) . '.' . $extension;
+            $file->move($uploadDir, $filename);
+
+            $title = !empty($validated['title']) ? $validated['title'] : ('Shot ' . str_pad($highestOrder, 2, '0', STR_PAD_LEFT));
+
+            StoryboardFrame::create([
+                'title' => $title,
+                'image_url' => '/uploads/storyboard/' . $filename,
+                'caption' => $validated['caption'] ?? null,
+                'scene' => $validated['scene'] ?? null,
+                'vo' => $validated['vo'] ?? null,
+                'sort_order' => $highestOrder,
+                'is_active' => true,
+            ]);
+
+            return back()->with('success', 'Storyboard frame added successfully.');
+        }
+
+        // Case 3: URL provided
+        if (!empty($validated['image_url'])) {
+            $highestOrder++;
+            $title = !empty($validated['title']) ? $validated['title'] : ('Shot ' . str_pad($highestOrder, 2, '0', STR_PAD_LEFT));
+
+            StoryboardFrame::create([
+                'title' => $title,
+                'image_url' => $validated['image_url'],
+                'caption' => $validated['caption'] ?? null,
+                'scene' => $validated['scene'] ?? null,
+                'vo' => $validated['vo'] ?? null,
+                'sort_order' => $highestOrder,
+                'is_active' => true,
+            ]);
+
+            return back()->with('success', 'Storyboard frame added successfully.');
+        }
+
+        return back()->withErrors(['image_file' => 'Please provide an image file or URL.']);
+    }
+
+    /**
+     * Reorder storyboard frames sequence.
+     */
+    public function reorderStoryboardFrames(Request $request)
+    {
+        $validated = $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'integer|exists:storyboard_frames,id',
+        ]);
+
+        foreach ($validated['order'] as $index => $id) {
+            StoryboardFrame::where('id', $id)->update(['sort_order' => $index + 1]);
+        }
+
+        return back()->with('success', 'Storyboard sequence order updated successfully.');
+    }
+
+    /**
+     * Delete a storyboard frame.
+     */
+    public function deleteStoryboardFrame(StoryboardFrame $storyboardFrame)
+    {
+        if (str_starts_with($storyboardFrame->image_url, '/uploads/storyboard/')) {
+            $filePath = public_path($storyboardFrame->image_url);
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        $storyboardFrame->delete();
+
+        // Renumber remaining frames cleanly
+        $remaining = StoryboardFrame::orderBy('sort_order')->orderBy('id')->get();
+        foreach ($remaining as $idx => $frame) {
+            $frame->update(['sort_order' => $idx + 1]);
+        }
+
+        return back()->with('success', 'Storyboard frame removed successfully.');
+    }
+
+    /**
+     * Reset storyboard frames back to default 17 Lily Lanka frames.
+     */
+    public function resetStoryboardFrames()
+    {
+        StoryboardFrame::truncate();
+
+        $now = now();
+        $defaults = [
+            ['title' => 'Shot 01', 'image_url' => '/images/storyboard/lily-lanka/shot_01.webp', 'scene' => 'Sunrise over Sri Lanka (coastline / hills). Quiet morning mood.', 'vo' => 'Before you arrive in Sri Lanka...'],
+            ['title' => 'Shot 02', 'image_url' => '/images/storyboard/lily-lanka/shot_02.webp', 'scene' => 'Hotel doors open, lights switch on, staff prepping reception.', 'vo' => '…Sri Lanka is already preparing for you.'],
+            ['title' => 'Shot 03', 'image_url' => '/images/storyboard/lily-lanka/shot_03.webp', 'scene' => 'Driver wipes mirrors, checks vehicle, straightens pickup board.', 'vo' => 'Because here..'],
+            ['title' => 'Shot 04', 'image_url' => '/images/storyboard/lily-lanka/shot_04.webp', 'scene' => 'Cooking class host lays out spices, clay pots simmer, warm smile.', 'vo' => '..you\'re not just visiting a destination.'],
+            ['title' => 'Shot 05', 'image_url' => '/images/storyboard/lily-lanka/shot_05.webp', 'scene' => 'Dolphin / whale watching crew preparing the boat at sunrise.', 'vo' => 'You\'re being hosted.'],
+            ['title' => 'Shot 06', 'image_url' => '/images/storyboard/lily-lanka/shot_06.webp', 'scene' => 'Safari jeep starts up, guide checks binoculars, nature shots.', 'vo' => 'From the moment you land..'],
+            ['title' => 'Shot 07', 'image_url' => '/images/storyboard/lily-lanka/shot_07.webp', 'scene' => 'Tourist arrives, greeted warmly, luggage helped, water offered.', 'vo' => '...to every journey you take...'],
+            ['title' => 'Shot 08', 'image_url' => '/images/storyboard/lily-lanka/shot_08.webp', 'scene' => 'Tea plantation worker with fresh basket; train passing in background.', 'vo' => '...every encounter...'],
+            ['title' => 'Shot 09', 'image_url' => '/images/storyboard/lily-lanka/shot_09.webp', 'scene' => 'Luxury resort host presents welcome drink; pool overlooks ocean.', 'vo' => '...is crafted with care.'],
+            ['title' => 'Shot 10', 'image_url' => '/images/storyboard/lily-lanka/shot_10.webp', 'scene' => 'Ancient temple steps at dusk; oil lamps flickering.', 'vo' => 'Centuries of heritage...'],
+            ['title' => 'Shot 11', 'image_url' => '/images/storyboard/lily-lanka/shot_11.webp', 'scene' => 'Ayurvedic wellness pavilion; oils poured, total relaxation.', 'vo' => '...meet timeless tranquility.'],
+            ['title' => 'Shot 12', 'image_url' => '/images/storyboard/lily-lanka/shot_12.webp', 'scene' => 'Surfer catching a golden wave in Mirissa; sea spray glints.', 'vo' => 'Adventure on every coast.'],
+            ['title' => 'Shot 13', 'image_url' => '/images/storyboard/lily-lanka/shot_13.webp', 'scene' => 'Evening street market; string hoppers, vibrant colors, laughter.', 'vo' => 'Flavours you never forget.'],
+            ['title' => 'Shot 14', 'image_url' => '/images/storyboard/lily-lanka/shot_14.webp', 'scene' => 'Sigiriya rock fortress aerial view at golden hour.', 'vo' => 'Wonders that take your breath away.'],
+            ['title' => 'Shot 15', 'image_url' => '/images/storyboard/lily-lanka/shot_15.webp', 'scene' => 'Couple watching sunset from an infinity pool in Ella.', 'vo' => 'Moments you hold onto forever.'],
+            ['title' => 'Shot 16', 'image_url' => '/images/storyboard/lily-lanka/shot_16.webp', 'scene' => 'Warm candlelight dinner on the beach under palm trees.', 'vo' => 'Lily Lanka Travels.'],
+            ['title' => 'Shot 17', 'image_url' => '/images/storyboard/lily-lanka/shot_17.webp', 'scene' => 'Logo lockup with tagline: "Curated Journeys, Unforgettable Memories".', 'vo' => 'Your journey begins with us.'],
+        ];
+
+        foreach ($defaults as $i => $d) {
+            StoryboardFrame::create([
+                'title' => $d['title'],
+                'image_url' => $d['image_url'],
+                'caption' => $d['scene'] . ' VO: "' . $d['vo'] . '"',
+                'scene' => $d['scene'],
+                'vo' => $d['vo'],
+                'sort_order' => $i + 1,
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        return back()->with('success', 'Storyboard reset to default 17 Lily Lanka frames.');
     }
 
     /**

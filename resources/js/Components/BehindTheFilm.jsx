@@ -8,8 +8,9 @@ import { LILY_LANKA_STORYBOARD } from '../data/storyboard';
  * Continuous Automatic Storyboard Slider for the Human Concept section.
  */
 function StoryboardSlider({ frames = LILY_LANKA_STORYBOARD }) {
+    const activeFrames = frames && frames.length > 0 ? frames : LILY_LANKA_STORYBOARD;
     const [currentIndex, setCurrentIndex] = useState(0);
-    const total = frames.length;
+    const total = activeFrames.length;
 
     // Continuously auto-advance every 2.8 seconds
     useEffect(() => {
@@ -19,6 +20,13 @@ function StoryboardSlider({ frames = LILY_LANKA_STORYBOARD }) {
         }, 2800);
         return () => clearInterval(timer);
     }, [total]);
+
+    // Keep currentIndex within bounds if frames change
+    useEffect(() => {
+        if (currentIndex >= total && total > 0) {
+            setCurrentIndex(0);
+        }
+    }, [total, currentIndex]);
 
     const prevSlide = (e) => {
         e?.stopPropagation();
@@ -35,28 +43,29 @@ function StoryboardSlider({ frames = LILY_LANKA_STORYBOARD }) {
         setCurrentIndex(idx);
     };
 
-    const current = frames[currentIndex] || frames[0];
-
     return (
         <div className="group/slider relative w-full aspect-video rounded-2xl border border-white/10 bg-[#101217] shadow-xl overflow-hidden select-none">
             {/* Storyboard Frames with smooth crossfade */}
-            {frames.map((frame, idx) => (
-                <div
-                    key={frame.shot || idx}
-                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                        idx === currentIndex
-                            ? 'opacity-100 z-10 pointer-events-auto'
-                            : 'opacity-0 z-0 pointer-events-none'
-                    }`}
-                >
-                    <img
-                        src={appUrl(frame.url)}
-                        alt={frame.title || `Storyboard Frame ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                        loading={idx === 0 ? 'eager' : 'lazy'}
-                    />
-                </div>
-            ))}
+            {activeFrames.map((frame, idx) => {
+                const imgSource = frame.image_url || frame.url;
+                return (
+                    <div
+                        key={frame.id || frame.shot || idx}
+                        className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                            idx === currentIndex
+                                ? 'opacity-100 z-10 pointer-events-auto'
+                                : 'opacity-0 z-0 pointer-events-none'
+                        }`}
+                    >
+                        <img
+                            src={appUrl(imgSource)}
+                            alt={frame.title || `Storyboard Frame ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                            loading={idx === 0 ? 'eager' : 'lazy'}
+                        />
+                    </div>
+                );
+            })}
 
             {/* Subtle top & bottom edge gradients for badge and dots visibility */}
             <div className="absolute inset-x-0 top-0 h-16 z-20 pointer-events-none bg-gradient-to-b from-black/50 to-transparent" />
@@ -75,40 +84,46 @@ function StoryboardSlider({ frames = LILY_LANKA_STORYBOARD }) {
             </div>
 
             {/* Navigation Arrows */}
-            <button
-                type="button"
-                onClick={prevSlide}
-                className="cursor-pointer absolute left-2.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center transition opacity-75 group-hover/slider:opacity-100 hover:scale-105 active:scale-95"
-                aria-label="Previous shot"
-            >
-                <ChevronLeft size={18} />
-            </button>
+            {total > 1 && (
+                <>
+                    <button
+                        type="button"
+                        onClick={prevSlide}
+                        className="cursor-pointer absolute left-2.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center transition opacity-75 group-hover/slider:opacity-100 hover:scale-105 active:scale-95"
+                        aria-label="Previous shot"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
 
-            <button
-                type="button"
-                onClick={nextSlide}
-                className="cursor-pointer absolute right-2.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center transition opacity-75 group-hover/slider:opacity-100 hover:scale-105 active:scale-95"
-                aria-label="Next shot"
-            >
-                <ChevronRight size={18} />
-            </button>
+                    <button
+                        type="button"
+                        onClick={nextSlide}
+                        className="cursor-pointer absolute right-2.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center transition opacity-75 group-hover/slider:opacity-100 hover:scale-105 active:scale-95"
+                        aria-label="Next shot"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </>
+            )}
 
             {/* Scrubber Dots (Centered at bottom) */}
-            <div className="absolute bottom-3 inset-x-0 z-30 flex items-center justify-center gap-1 sm:gap-1.5 pointer-events-auto px-4">
-                {frames.map((_, idx) => (
-                    <button
-                        key={idx}
-                        type="button"
-                        onClick={(e) => goToSlide(idx, e)}
-                        className={`cursor-pointer transition-all duration-300 rounded-full ${
-                            idx === currentIndex
-                                ? 'w-5 sm:w-6 h-1.5 bg-[#f7a838] shadow-[0_0_8px_#f7a838]'
-                                : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
-                        }`}
-                        aria-label={`Go to shot ${idx + 1}`}
-                    />
-                ))}
-            </div>
+            {total > 1 && (
+                <div className="absolute bottom-3 inset-x-0 z-30 flex items-center justify-center gap-1 sm:gap-1.5 pointer-events-auto px-4 max-w-full overflow-hidden flex-wrap">
+                    {activeFrames.map((_, idx) => (
+                        <button
+                            key={idx}
+                            type="button"
+                            onClick={(e) => goToSlide(idx, e)}
+                            className={`cursor-pointer transition-all duration-300 rounded-full ${
+                                idx === currentIndex
+                                    ? 'w-5 sm:w-6 h-1.5 bg-[#f7a838] shadow-[0_0_8px_#f7a838]'
+                                    : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
+                            }`}
+                            aria-label={`Go to shot ${idx + 1}`}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -180,7 +195,7 @@ function MediaCard({ url, label, placeholder, isStoryboard = false }) {
     );
 }
 
-export default function BehindTheFilm({ setting }) {
+export default function BehindTheFilm({ setting, storyboardFrames = [] }) {
     const tag = setting?.tag || 'BEHIND THE FILM';
     const titleLine1 = setting?.title_line_1 || 'From human sketch to finished';
     const titleLine2 = setting?.title_line_2 !== undefined ? setting?.title_line_2 : 'film.';
@@ -190,6 +205,10 @@ export default function BehindTheFilm({ setting }) {
     const finishLabel = setting?.finish_label || 'AI production, human finish';
     const finishPlaceholder = setting?.finish_placeholder_text || '[Final film frame]';
     const finishImage = setting?.finish_image_url;
+
+    const activeFrames = storyboardFrames && storyboardFrames.length > 0
+        ? storyboardFrames
+        : LILY_LANKA_STORYBOARD;
 
     // Check if concept uses the storyboard slider (default when set to storyboard or empty)
     const isConceptStoryboard =
@@ -220,7 +239,7 @@ export default function BehindTheFilm({ setting }) {
                     {/* Left Card: Human Concept (Storyboard Slider) */}
                     <div className="flex flex-col group">
                         {isConceptStoryboard ? (
-                            <StoryboardSlider />
+                            <StoryboardSlider frames={activeFrames} />
                         ) : (
                             <MediaCard
                                 url={conceptImage}
@@ -235,7 +254,7 @@ export default function BehindTheFilm({ setting }) {
                             </span>
                             {isConceptStoryboard && (
                                 <span className="text-[11px] text-neutral-500 font-mono">
-                                    17 storyboard frames
+                                    {activeFrames.length} storyboard frames
                                 </span>
                             )}
                         </div>
