@@ -7,6 +7,7 @@ import FeaturedFilms from '../Components/FeaturedFilms';
 import HowItWorks from '../Components/HowItWorks';
 import BehindTheFilm from '../Components/BehindTheFilm';
 import About from '../Components/About';
+import GlobalOffices from '../Components/GlobalOffices';
 import OtherServices from '../Components/OtherServices';
 import CtaBanner from '../Components/CtaBanner';
 import Footer from '../Components/Footer';
@@ -71,7 +72,10 @@ export default function Home({ hero, behindTheFilm, about, teamMembers, services
                 {/* 6th Section: ABOUT ("Built for global brands.") */}
                 <About about={about} teamMembers={teamMembers} />
 
-                {/* 7th Section: OUR OTHER SERVICES ("Beyond video, we support the wider brand.") */}
+                {/* 7th Section: GLOBAL OFFICES (Interactive Map & Regional Presences) */}
+                <GlobalOffices />
+
+                {/* 8th Section: OUR OTHER SERVICES ("Beyond video, we support the wider brand.") */}
                 <OtherServices setting={servicesSetting} services={services} />
 
                 {/* 8th Section: HIGH-CONTRAST CTA ("From brief to big idea in 72 hours.") */}
