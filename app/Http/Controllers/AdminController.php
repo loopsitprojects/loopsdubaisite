@@ -16,6 +16,7 @@ use App\Models\WorkSetting;
 use App\Models\ContactSetting;
 use App\Models\HomeSection;
 use App\Models\StoryboardFrame;
+use App\Models\Office;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -117,6 +118,7 @@ class AdminController extends Controller
             'total_brands' => \App\Models\BrandLogo::count(),
             'total_team' => TeamMember::count(),
             'total_services' => ServiceItem::count(),
+            'total_offices' => Office::count(),
         ];
 
         $homeSections = HomeSection::orderBy('sort_order')->get();
@@ -128,11 +130,13 @@ class AdminController extends Controller
         }
 
         $storyboardFrames = StoryboardFrame::ordered()->get();
+        $offices = Office::ordered()->get();
 
         return Inertia::render('Admin/Dashboard', [
             'hero' => $hero,
             'behindTheFilm' => $behindTheFilm,
             'storyboardFrames' => $storyboardFrames,
+            'offices' => $offices,
             'about' => $about,
             'teamMembers' => $teamMembers,
             'servicesSetting' => $servicesSetting,
@@ -653,6 +657,121 @@ class AdminController extends Controller
         }
 
         return back()->with('success', 'Storyboard reset to default 17 Lily Lanka frames.');
+    }
+
+    /**
+     * Store a new global office / country location.
+     */
+    public function storeOffice(Request $request)
+    {
+        $validated = $request->validate([
+            'city' => 'required|string|max:100',
+            'country' => 'required|string|max:100',
+            'role' => 'nullable|string|max:150',
+            'is_headquarters' => 'nullable|boolean',
+            'lat' => 'nullable|numeric',
+            'lng' => 'nullable|numeric',
+            'description' => 'nullable|string|max:1000',
+            'phone' => 'nullable|string|max:100',
+            'email' => 'nullable|string|max:150',
+            'address' => 'nullable|string|max:300',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        if (!isset($validated['sort_order']) || $validated['sort_order'] === null) {
+            $validated['sort_order'] = ((int) Office::max('sort_order')) + 1;
+        }
+
+        if (!isset($validated['is_active'])) {
+            $validated['is_active'] = true;
+        }
+
+        if (!empty($validated['is_headquarters'])) {
+            Office::where('is_headquarters', true)->update(['is_headquarters' => false]);
+        }
+
+        $office = Office::create($validated);
+
+        return back()->with('success', "Office in {$office->city}, {$office->country} added successfully.");
+    }
+
+    /**
+     * Update an existing global office / country location.
+     */
+    public function updateOffice(Request $request, Office $office)
+    {
+        $validated = $request->validate([
+            'city' => 'required|string|max:100',
+            'country' => 'required|string|max:100',
+            'role' => 'nullable|string|max:150',
+            'is_headquarters' => 'nullable|boolean',
+            'lat' => 'nullable|numeric',
+            'lng' => 'nullable|numeric',
+            'description' => 'nullable|string|max:1000',
+            'phone' => 'nullable|string|max:100',
+            'email' => 'nullable|string|max:150',
+            'address' => 'nullable|string|max:300',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        if (!empty($validated['is_headquarters'])) {
+            Office::where('id', '!=', $office->id)->where('is_headquarters', true)->update(['is_headquarters' => false]);
+        }
+
+        $office->update($validated);
+
+        return back()->with('success', "Office in {$office->city} updated successfully.");
+    }
+
+    /**
+     * Toggle visibility (show/hide) of an office location on the live site.
+     */
+    public function toggleOfficeVisibility(Office $office)
+    {
+        $newStatus = !$office->is_active;
+        $office->update(['is_active' => $newStatus]);
+
+        $message = $newStatus 
+            ? "{$office->city} is now visible on the live site." 
+            : "{$office->city} is now hidden from the live site.";
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Delete a global office location.
+     */
+    public function deleteOffice(Office $office)
+    {
+        $cityName = $office->city;
+        $office->delete();
+
+        // Renumber remaining offices
+        $remaining = Office::orderBy('sort_order')->orderBy('id')->get();
+        foreach ($remaining as $idx => $item) {
+            $item->update(['sort_order' => $idx + 1]);
+        }
+
+        return back()->with('success', "Office in {$cityName} removed successfully.");
+    }
+
+    /**
+     * Reorder global offices sequence.
+     */
+    public function reorderOffices(Request $request)
+    {
+        $validated = $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'integer|exists:offices,id',
+        ]);
+
+        foreach ($validated['order'] as $index => $id) {
+            Office::where('id', $id)->update(['sort_order' => $index + 1]);
+        }
+
+        return back()->with('success', 'Global offices sequence order updated.');
     }
 
     /**

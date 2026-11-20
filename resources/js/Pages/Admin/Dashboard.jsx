@@ -54,6 +54,7 @@ export default function Dashboard({
     teamMembers = [], 
     servicesSetting, 
     services = [], 
+    offices = [], 
     company, 
     bookings = [], 
     portfolio = [], 
@@ -488,6 +489,109 @@ export default function Dashboard({
         }
     };
 
+    // Modal & Form state for Global Office Add / Edit
+    const [officeModalOpen, setOfficeModalOpen] = useState(false);
+    const [editingOffice, setEditingOffice] = useState(null);
+
+    const officeForm = useForm({
+        city: '',
+        country: '',
+        role: '',
+        is_headquarters: false,
+        lat: '',
+        lng: '',
+        description: '',
+        phone: '',
+        email: '',
+        address: '',
+        is_active: true,
+        sort_order: (offices?.length || 0) + 1,
+    });
+
+    const openAddOfficeModal = () => {
+        setEditingOffice(null);
+        officeForm.setData({
+            city: '',
+            country: '',
+            role: '',
+            is_headquarters: false,
+            lat: '',
+            lng: '',
+            description: '',
+            phone: '',
+            email: '',
+            address: '',
+            is_active: true,
+            sort_order: (offices?.length || 0) + 1,
+        });
+        setOfficeModalOpen(true);
+    };
+
+    const openEditOfficeModal = (item) => {
+        setEditingOffice(item);
+        officeForm.setData({
+            city: item.city || '',
+            country: item.country || '',
+            role: item.role || '',
+            is_headquarters: Boolean(item.is_headquarters),
+            lat: item.lat !== null && item.lat !== undefined ? item.lat : '',
+            lng: item.lng !== null && item.lng !== undefined ? item.lng : '',
+            description: item.description || '',
+            phone: item.phone || '',
+            email: item.email || '',
+            address: item.address || '',
+            is_active: item.is_active !== false,
+            sort_order: item.sort_order || 1,
+        });
+        setOfficeModalOpen(true);
+    };
+
+    const handleOfficeSubmit = (e) => {
+        e.preventDefault();
+        if (editingOffice) {
+            officeForm.post(`/admin/offices/${editingOffice.id}`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setOfficeModalOpen(false);
+                    setEditingOffice(null);
+                },
+            });
+        } else {
+            officeForm.post('/admin/offices', {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setOfficeModalOpen(false);
+                    officeForm.reset();
+                },
+            });
+        }
+    };
+
+    const handleToggleOffice = (officeId) => {
+        router.post(`/admin/offices/${officeId}/toggle`, {}, { preserveScroll: true });
+    };
+
+    const handleDeleteOffice = (officeId, cityName) => {
+        if (confirm(`Are you sure you want to remove "${cityName || 'this office'}" from the global presence section?`)) {
+            router.delete(`/admin/offices/${officeId}`, { preserveScroll: true });
+        }
+    };
+
+    const handleMoveOffice = (index, direction) => {
+        const target = index + direction;
+        if (target < 0 || target >= offices.length) return;
+        const newOffices = [...offices];
+        const temp = newOffices[index];
+        newOffices[index] = newOffices[target];
+        newOffices[target] = temp;
+
+        router.post('/admin/offices/reorder', {
+            order: newOffices.map((o) => o.id),
+        }, {
+            preserveScroll: true,
+        });
+    };
+
     // Modal state for Portfolio Film Add / Edit
     const [filmModalOpen, setFilmModalOpen] = useState(false);
     const [editingFilm, setEditingFilm] = useState(null);
@@ -850,6 +954,7 @@ export default function Dashboard({
                 { id: 'hero', label: 'Hero Section', icon: Sliders },
                 { id: 'behind', label: 'Behind The Film', icon: Sparkles },
                 { id: 'about', label: 'About & Team', icon: Users, badge: teamMembers.length },
+                { id: 'global', label: 'Global Offices', icon: Globe, badge: offices.length },
                 { id: 'services', label: 'Other Services', icon: Layers, badge: services.length },
                 { id: 'visibility', label: 'Section Visibility', icon: Eye },
             ]
@@ -1249,6 +1354,30 @@ export default function Dashboard({
                                                 homeTab === 'about' ? 'bg-black/15 text-black' : 'bg-white/10 text-neutral-300'
                                             }`}>
                                                 {teamMembers.length}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setHomeTab('global')}
+                                        className={`cursor-pointer px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 ${
+                                            homeTab === 'global'
+                                                ? 'bg-white text-black shadow-md'
+                                                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                                        }`}
+                                    >
+                                        <Globe size={14} className={homeTab === 'global' ? 'text-black' : 'text-[#14f1d9]'} />
+                                        <span>Global Offices</span>
+                                        {visibilityMap?.global_offices === false ? (
+                                            <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+                                                Hidden
+                                            </span>
+                                        ) : offices.length > 0 && (
+                                            <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                                                homeTab === 'global' ? 'bg-black/15 text-black' : 'bg-white/10 text-neutral-300'
+                                            }`}>
+                                                {offices.filter(o => o.is_active).length}/{offices.length}
                                             </span>
                                         )}
                                     </button>
@@ -2504,6 +2633,252 @@ export default function Dashboard({
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {/* HOME SECTION: GLOBAL OFFICES & PRESENCE CMS */}
+                            {homeTab === 'global' && (
+                                <div className="space-y-8 animate-fadeIn">
+                                    {/* Page Header */}
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="w-2 h-2 rounded-full bg-[#14f1d9] shadow-[0_0_8px_#14f1d9]"></span>
+                                                <span className="text-xs font-bold uppercase tracking-wider text-[#14f1d9]">
+                                                    Home Page Section CMS
+                                                </span>
+                                            </div>
+                                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                                                Global Offices CMS
+                                            </h2>
+                                            <p className="text-sm text-neutral-400 mt-1">
+                                                Manage international presence hubs, map coordinates, and add, edit, reorder or hide countries from the live site.
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={openAddOfficeModal}
+                                            className="cursor-pointer px-5 py-2.5 rounded-full bg-[#14f1d9] hover:bg-[#12dac4] text-black text-xs font-bold flex items-center gap-2 transition shadow-[0_0_20px_rgba(20,241,217,0.3)] self-start sm:self-auto"
+                                        >
+                                            <Plus size={16} />
+                                            <span>Add Location</span>
+                                        </button>
+                                    </div>
+
+                                    {/* Overview Metrics & Info */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div className="bg-[#101217] border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-xs text-neutral-400">Total Locations</span>
+                                                <div className="text-2xl font-black text-white mt-0.5">{offices.length}</div>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
+                                                <Globe size={18} />
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-[#101217] border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-xs text-neutral-400">Visible on Live Site</span>
+                                                <div className="text-2xl font-black text-[#14f1d9] mt-0.5">
+                                                    {offices.filter((o) => o.is_active).length}
+                                                </div>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-xl bg-[#14f1d9]/10 border border-[#14f1d9]/20 flex items-center justify-center text-[#14f1d9]">
+                                                <Eye size={18} />
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-[#101217] border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-xs text-neutral-400">Hidden from Live Site</span>
+                                                <div className="text-2xl font-black text-[#f7a838] mt-0.5">
+                                                    {offices.filter((o) => !o.is_active).length}
+                                                </div>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-xl bg-[#f7a838]/10 border border-[#f7a838]/20 flex items-center justify-center text-[#f7a838]">
+                                                <EyeOff size={18} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Notice / Guide */}
+                                    <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex items-start gap-3">
+                                        <Globe size={18} className="text-[#14f1d9] mt-0.5 flex-shrink-0" />
+                                        <div className="text-xs text-neutral-300 leading-relaxed">
+                                            <span className="font-semibold text-white">Live Site Visibility Control:</span> Click the <span className="text-emerald-400 font-bold">Visible</span> / <span className="text-red-400 font-bold">Hidden</span> pill button on any office card to immediately toggle its visibility on the live landing page and interactive canvas map without having to delete the record.
+                                        </div>
+                                    </div>
+
+                                    {/* Offices Grid */}
+                                    {offices.length === 0 ? (
+                                        <div className="p-12 text-center rounded-2xl border border-dashed border-white/10 bg-[#101217] space-y-3">
+                                            <Globe size={36} className="mx-auto text-neutral-600" />
+                                            <h3 className="text-base font-bold text-white">No Global Locations Added</h3>
+                                            <p className="text-xs text-neutral-400 max-w-sm mx-auto">
+                                                Add your first international office, headquarters, or regional branch to display on the 360° global network map.
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={openAddOfficeModal}
+                                                className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#14f1d9] hover:bg-[#12dac4] text-black text-xs font-bold transition mt-2"
+                                            >
+                                                <Plus size={15} />
+                                                <span>Add First Location</span>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {offices.map((office, index) => (
+                                                <div
+                                                    key={office.id}
+                                                    className={`bg-[#101217] border rounded-2xl p-6 transition flex flex-col justify-between shadow-xl relative group ${
+                                                        office.is_active
+                                                            ? 'border-white/10 hover:border-white/20'
+                                                            : 'border-white/5 opacity-75 bg-neutral-950/70'
+                                                    }`}
+                                                >
+                                                    <div className="space-y-4">
+                                                        {/* Top Card Badges */}
+                                                        <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/10">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/60 text-neutral-400 border border-white/10">
+                                                                    #{String(index + 1).padStart(2, '0')}
+                                                                </span>
+                                                                {office.is_headquarters ? (
+                                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f7a838]/15 text-[#f7a838] border border-[#f7a838]/30 flex items-center gap-1">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-[#f7a838]"></span>
+                                                                        <span>HEADQUARTERS</span>
+                                                                    </span>
+                                                                ) : office.role ? (
+                                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10 truncate max-w-[150px]">
+                                                                        {office.role}
+                                                                    </span>
+                                                                ) : null}
+                                                            </div>
+
+                                                            {/* 1-Click Visibility Toggle */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleToggleOffice(office.id)}
+                                                                className={`cursor-pointer px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition ${
+                                                                    office.is_active
+                                                                        ? 'bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400'
+                                                                        : 'bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400'
+                                                                }`}
+                                                                title={office.is_active ? 'Click to hide from live site' : 'Click to show on live site'}
+                                                            >
+                                                                <span
+                                                                    className={`w-1.5 h-1.5 rounded-full ${
+                                                                        office.is_active ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'
+                                                                    }`}
+                                                                />
+                                                                <span>{office.is_active ? 'Visible' : 'Hidden'}</span>
+                                                                {office.is_active ? <Eye size={12} /> : <EyeOff size={12} />}
+                                                            </button>
+                                                        </div>
+
+                                                        {/* City & Country */}
+                                                        <div>
+                                                            <h3 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+                                                                <span>{office.city}</span>
+                                                                <span className="text-xs font-semibold text-[#14f1d9] font-mono px-2 py-0.5 rounded bg-[#14f1d9]/10 border border-[#14f1d9]/20">
+                                                                    {office.country}
+                                                                </span>
+                                                            </h3>
+                                                            {office.role && office.is_headquarters && (
+                                                                <span className="text-xs text-neutral-400 mt-0.5 block">
+                                                                    {office.role}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Coordinates Badge */}
+                                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 text-[11px] font-mono text-neutral-400">
+                                                            <MapPin size={12} className="text-[#14f1d9] flex-shrink-0" />
+                                                            <span className="truncate">
+                                                                Lat: {Number(office.lat).toFixed(4)}, Lng: {Number(office.lng).toFixed(4)}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Description */}
+                                                        {office.description && (
+                                                            <p className="text-xs text-neutral-400 line-clamp-3 leading-relaxed">
+                                                                {office.description}
+                                                            </p>
+                                                        )}
+
+                                                        {/* Contact Details */}
+                                                        <div className="space-y-1.5 pt-2 border-t border-white/5 text-xs text-neutral-400">
+                                                            {office.phone && (
+                                                                <div className="flex items-center gap-2 truncate">
+                                                                    <Phone size={12} className="text-[#14f1d9] flex-shrink-0" />
+                                                                    <span className="truncate">{office.phone}</span>
+                                                                </div>
+                                                            )}
+                                                            {office.email && (
+                                                                <div className="flex items-center gap-2 truncate">
+                                                                    <Mail size={12} className="text-[#14f1d9] flex-shrink-0" />
+                                                                    <span className="truncate">{office.email}</span>
+                                                                </div>
+                                                            )}
+                                                            {office.address && (
+                                                                <div className="flex items-start gap-2 text-[11px] text-neutral-500">
+                                                                    <MapPin size={12} className="text-neutral-500 mt-0.5 flex-shrink-0" />
+                                                                    <span className="line-clamp-2">{office.address}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Card Bottom Actions */}
+                                                    <div className="flex items-center justify-between pt-4 mt-4 border-t border-white/10">
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleMoveOffice(index, -1)}
+                                                                disabled={index === 0}
+                                                                className="cursor-pointer w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 flex items-center justify-center transition disabled:opacity-20 disabled:pointer-events-none"
+                                                                title="Move left / earlier in sequence"
+                                                            >
+                                                                <ArrowUp size={13} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleMoveOffice(index, 1)}
+                                                                disabled={index === offices.length - 1}
+                                                                className="cursor-pointer w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 flex items-center justify-center transition disabled:opacity-20 disabled:pointer-events-none"
+                                                                title="Move right / later in sequence"
+                                                            >
+                                                                <ArrowDown size={13} />
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openEditOfficeModal(office)}
+                                                                className="cursor-pointer px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold flex items-center gap-1.5 transition"
+                                                            >
+                                                                <Edit3 size={13} className="text-[#14f1d9]" />
+                                                                <span>Edit</span>
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDeleteOffice(office.id, office.city)}
+                                                                className="cursor-pointer p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 hover:text-rose-300 transition"
+                                                                title="Remove location"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -5264,6 +5639,286 @@ export default function Dashboard({
                                     className="px-6 py-2 rounded-full bg-[#14f1d9] hover:bg-[#12dac4] text-black text-xs font-bold transition cursor-pointer disabled:opacity-50"
                                 >
                                     {serviceItemForm.processing ? 'Saving...' : editingService ? 'Update Service' : 'Add Service'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* GLOBAL OFFICE MODAL (ADD / EDIT) */}
+            {officeModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+                    <div className="bg-[#101217] border border-white/10 rounded-2xl w-full max-w-xl p-6 sm:p-8 space-y-5 shadow-2xl my-8">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                            <div className="flex items-center gap-2">
+                                <Globe size={18} className="text-[#14f1d9]" />
+                                <h3 className="text-lg font-bold text-white">
+                                    {editingOffice ? `Edit Location: ${editingOffice.city}` : 'Add Global Location'}
+                                </h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setOfficeModalOpen(false)}
+                                className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleOfficeSubmit} className="space-y-4">
+                            {/* Quick Presets Picker */}
+                            {!editingOffice && (
+                                <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
+                                    <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-1.5">
+                                        ⚡ Quick Fill Popular Hub (Optional)
+                                    </label>
+                                    <select
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            const presets = {
+                                                colombo: { city: 'Colombo', country: 'Sri Lanka', role: 'Global Headquarters', lat: 6.9147, lng: 79.8484, is_headquarters: true },
+                                                dubai: { city: 'Dubai', country: 'UAE', role: 'Middle East & Africa', lat: 25.1972, lng: 55.2744, is_headquarters: false },
+                                                doha: { city: 'Doha', country: 'Qatar', role: 'Gulf Region', lat: 25.2854, lng: 51.5310, is_headquarters: false },
+                                                london: { city: 'London', country: 'United Kingdom', role: 'UK & Europe', lat: 51.5144, lng: -0.0803, is_headquarters: false },
+                                                singapore: { city: 'Singapore', country: 'Singapore', role: 'Southeast Asia', lat: 1.2838, lng: 103.8516, is_headquarters: false },
+                                                sydney: { city: 'Sydney', country: 'Australia', role: 'Oceania', lat: -33.8688, lng: 151.2093, is_headquarters: false },
+                                                suva: { city: 'Suva', country: 'Fiji', role: 'Pacific Hub', lat: -18.1248, lng: 178.4501, is_headquarters: false },
+                                                riyadh: { city: 'Riyadh', country: 'Saudi Arabia', role: 'GCC Hub', lat: 24.7136, lng: 46.6753, is_headquarters: false },
+                                                tokyo: { city: 'Tokyo', country: 'Japan', role: 'East Asia', lat: 35.6762, lng: 139.6503, is_headquarters: false },
+                                                newyork: { city: 'New York', country: 'USA', role: 'North America', lat: 40.7128, lng: -74.0060, is_headquarters: false },
+                                                zurich: { city: 'Zurich', country: 'Switzerland', role: 'Central Europe', lat: 47.3769, lng: 8.5417, is_headquarters: false },
+                                                paris: { city: 'Paris', country: 'France', role: 'Western Europe', lat: 48.8566, lng: 2.3522, is_headquarters: false },
+                                                mumbai: { city: 'Mumbai', country: 'India', role: 'South Asia', lat: 19.0760, lng: 72.8777, is_headquarters: false },
+                                                toronto: { city: 'Toronto', country: 'Canada', role: 'Americas', lat: 43.6532, lng: -79.3832, is_headquarters: false },
+                                            };
+                                            if (presets[val]) {
+                                                const p = presets[val];
+                                                officeForm.setData((prev) => ({
+                                                    ...prev,
+                                                    city: p.city,
+                                                    country: p.country,
+                                                    role: p.role,
+                                                    lat: p.lat,
+                                                    lng: p.lng,
+                                                    is_headquarters: p.is_headquarters,
+                                                }));
+                                            }
+                                        }}
+                                        className="w-full px-3 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white text-xs focus:outline-none focus:border-[#14f1d9]"
+                                        defaultValue=""
+                                    >
+                                        <option value="">Select a city to auto-fill coordinates...</option>
+                                        <option value="colombo">Colombo, Sri Lanka (HQ)</option>
+                                        <option value="dubai">Dubai, UAE</option>
+                                        <option value="doha">Doha, Qatar</option>
+                                        <option value="london">London, United Kingdom</option>
+                                        <option value="singapore">Singapore</option>
+                                        <option value="sydney">Sydney, Australia</option>
+                                        <option value="suva">Suva, Fiji</option>
+                                        <option value="riyadh">Riyadh, Saudi Arabia</option>
+                                        <option value="tokyo">Tokyo, Japan</option>
+                                        <option value="newyork">New York, USA</option>
+                                        <option value="zurich">Zurich, Switzerland</option>
+                                        <option value="paris">Paris, France</option>
+                                        <option value="mumbai">Mumbai, India</option>
+                                        <option value="toronto">Toronto, Canada</option>
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* City & Country */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                        City Name <span className="text-[#14f1d9]">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={officeForm.data.city}
+                                        onChange={(e) => officeForm.setData('city', e.target.value)}
+                                        placeholder="e.g. Dubai"
+                                        className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                        Country Name <span className="text-[#14f1d9]">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={officeForm.data.country}
+                                        onChange={(e) => officeForm.setData('country', e.target.value)}
+                                        placeholder="e.g. UAE"
+                                        className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Role / Region */}
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                    Region / Role Label
+                                </label>
+                                <input
+                                    type="text"
+                                    value={officeForm.data.role}
+                                    onChange={(e) => officeForm.setData('role', e.target.value)}
+                                    placeholder="e.g. Middle East & Africa or Global Headquarters"
+                                    className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                />
+                            </div>
+
+                            {/* Map Coordinates: Latitude & Longitude */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                        Latitude (Map Pin Y)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        value={officeForm.data.lat}
+                                        onChange={(e) => officeForm.setData('lat', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                        placeholder="e.g. 25.1972"
+                                        className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9] font-mono"
+                                    />
+                                    <span className="text-[10px] text-neutral-500 mt-0.5 block">Between -90 and 90</span>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                        Longitude (Map Pin X)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        value={officeForm.data.lng}
+                                        onChange={(e) => officeForm.setData('lng', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                        placeholder="e.g. 55.2744"
+                                        className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9] font-mono"
+                                    />
+                                    <span className="text-[10px] text-neutral-500 mt-0.5 block">Between -180 and 180</span>
+                                </div>
+                            </div>
+
+                            {/* Phone & Email */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                        Phone Number
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={officeForm.data.phone}
+                                        onChange={(e) => officeForm.setData('phone', e.target.value)}
+                                        placeholder="e.g. +971 4 000 0000"
+                                        className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                        Email Address
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={officeForm.data.email}
+                                        onChange={(e) => officeForm.setData('email', e.target.value)}
+                                        placeholder="e.g. hello@loopsdubai.com"
+                                        className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Address */}
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                    Physical Office Address
+                                </label>
+                                <input
+                                    type="text"
+                                    value={officeForm.data.address}
+                                    onChange={(e) => officeForm.setData('address', e.target.value)}
+                                    placeholder="e.g. Dubai Media City, Building 4, Dubai, UAE"
+                                    className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                    Regional Description
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={officeForm.data.description}
+                                    onChange={(e) => officeForm.setData('description', e.target.value)}
+                                    placeholder="Explain the role, capabilities, and market focus of this location..."
+                                    className="w-full px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                />
+                            </div>
+
+                            {/* Headquarters & Active Toggles */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04] transition">
+                                    <input
+                                        type="checkbox"
+                                        checked={officeForm.data.is_headquarters}
+                                        onChange={(e) => officeForm.setData('is_headquarters', e.target.checked)}
+                                        className="rounded border-white/20 text-[#f7a838] focus:ring-0 w-4 h-4"
+                                    />
+                                    <div>
+                                        <span className="text-xs font-bold text-white block">Global Headquarters</span>
+                                        <span className="text-[11px] text-neutral-400">Highlights this office as prime agency HQ</span>
+                                    </div>
+                                </label>
+
+                                <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04] transition">
+                                    <input
+                                        type="checkbox"
+                                        checked={officeForm.data.is_active}
+                                        onChange={(e) => officeForm.setData('is_active', e.target.checked)}
+                                        className="rounded border-white/20 text-[#14f1d9] focus:ring-0 w-4 h-4"
+                                    />
+                                    <div>
+                                        <span className="text-xs font-bold text-white block">Visible on Live Site</span>
+                                        <span className="text-[11px] text-neutral-400">Uncheck to hide without deleting</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {/* Display Order */}
+                            <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                    Display Order Sequence
+                                </label>
+                                <input
+                                    type="number"
+                                    value={officeForm.data.sort_order}
+                                    onChange={(e) => officeForm.setData('sort_order', parseInt(e.target.value) || 1)}
+                                    className="w-32 px-3.5 py-2 rounded-lg bg-neutral-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#14f1d9]"
+                                />
+                            </div>
+
+                            {/* Modal Actions */}
+                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                                <button
+                                    type="button"
+                                    onClick={() => setOfficeModalOpen(false)}
+                                    className="px-4 py-2 text-xs text-neutral-400 hover:text-white transition cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={officeForm.processing}
+                                    className="px-6 py-2.5 rounded-full bg-[#14f1d9] hover:bg-[#12dac4] text-black text-xs font-bold transition cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-[0_0_15px_rgba(20,241,217,0.3)]"
+                                >
+                                    {officeForm.processing ? 'Saving...' : editingOffice ? 'Update Location' : 'Add Location'}
                                 </button>
                             </div>
                         </form>

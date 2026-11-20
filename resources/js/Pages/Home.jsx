@@ -25,6 +25,7 @@ export default function Home({
     portfolio,
     brandLogos,
     storyboardFrames = [],
+    offices = [],
     sectionsVisibility = {},
 }) {
     const { flash } = usePage().props;
@@ -100,7 +101,7 @@ export default function Home({
 
                 {/* 7th Section: GLOBAL OFFICES (Interactive Map & Regional Presences) */}
                 {sectionsVisibility?.global_offices !== false && (
-                    <GlobalOffices />
+                    <GlobalOffices offices={offices} />
                 )}
 
                 {/* 8th Section: OUR OTHER SERVICES ("Beyond video, we support the wider brand.") */}

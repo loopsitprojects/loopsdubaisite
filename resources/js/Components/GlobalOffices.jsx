@@ -105,7 +105,13 @@ export default function GlobalOffices({ offices = STATIC_OFFICES }) {
     const sectionRef = useRef(null);
 
     const officesList = offices && offices.length > 0 ? offices : STATIC_OFFICES;
-    const current = officesList[activeOffice] || officesList[0];
+    const current = officesList[activeOffice] || officesList[0] || {};
+
+    useEffect(() => {
+        if (activeOffice >= officesList.length && officesList.length > 0) {
+            setActiveOffice(0);
+        }
+    }, [officesList.length, activeOffice]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;

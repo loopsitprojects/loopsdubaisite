@@ -13,6 +13,7 @@ use App\Models\PortfolioItem;
 use App\Models\ContactSetting;
 use App\Models\HomeSection;
 use App\Models\StoryboardFrame;
+use App\Models\Office;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -78,11 +79,13 @@ class HomeController extends Controller
         }
         $brandLogos = \App\Models\BrandLogo::where('is_active', true)->orderBy('sort_order')->get();
         $storyboardFrames = StoryboardFrame::active()->ordered()->get();
+        $offices = Office::active()->ordered()->get();
 
         return Inertia::render('Home', [
             'hero' => $hero,
             'behindTheFilm' => $behindTheFilm,
             'storyboardFrames' => $storyboardFrames,
+            'offices' => $offices,
             'about' => $about,
             'teamMembers' => $teamMembers,
             'servicesSetting' => $servicesSetting,

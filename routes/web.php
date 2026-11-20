@@ -69,6 +69,13 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/storyboard-frames/reset', [AdminController::class, 'resetStoryboardFrames'])->name('admin.storyboard.reset');
     Route::delete('/storyboard-frames/{storyboardFrame}', [AdminController::class, 'deleteStoryboardFrame'])->name('admin.storyboard.delete');
 
+    // Global Offices CMS (Add, Edit, Delete, Toggle Visibility, Reorder)
+    Route::post('/offices', [AdminController::class, 'storeOffice'])->name('admin.offices.store');
+    Route::post('/offices/reorder', [AdminController::class, 'reorderOffices'])->name('admin.offices.reorder');
+    Route::post('/offices/{office}', [AdminController::class, 'updateOffice'])->name('admin.offices.update');
+    Route::post('/offices/{office}/toggle', [AdminController::class, 'toggleOfficeVisibility'])->name('admin.offices.toggle');
+    Route::delete('/offices/{office}', [AdminController::class, 'deleteOffice'])->name('admin.offices.delete');
+
     // Work Page Hero & Header CMS
     Route::post('/work-settings', [AdminController::class, 'updateWorkSetting'])->name('admin.workSetting.update');
 
