@@ -999,29 +999,19 @@ export default function Dashboard({
                 <div className="flex flex-col flex-1 overflow-hidden">
                     {/* Brand Logo Header */}
                     <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#14f1d9] via-[#00f2d5] to-[#ff7a18] p-[1.5px] shadow-[0_0_15px_rgba(20,241,217,0.2)]">
-                                <div className="w-full h-full bg-[#0c0e12] rounded-[10px] flex items-center justify-center">
-                                    <span className="text-base font-black text-[#14f1d9]">
-                                        {(companyForm.data.logo_text_prefix || 'L')[0]}
-                                    </span>
+                        <div className="flex items-center">
+                            {companyForm.data.logo_type === 'image' && (logoFilePreview || companyForm.data.logo_image_url) ? (
+                                <img
+                                    src={logoFilePreview || appUrl(companyForm.data.logo_image_url)}
+                                    alt={companyForm.data.company_name || 'Logo'}
+                                    className="h-8 max-w-[180px] object-contain"
+                                />
+                            ) : (
+                                <div className="text-lg font-black tracking-tight text-white leading-none">
+                                    {companyForm.data.logo_text_prefix || 'Loops'}{' '}
+                                    <span className="text-[#14f1d9]">{companyForm.data.logo_text_suffix || 'Integrated'}</span>
                                 </div>
-                            </div>
-                            <div>
-                                <div className="text-base font-black tracking-tight text-white leading-none">
-                                    {companyForm.data.logo_type === 'image' && (logoFilePreview || companyForm.data.logo_image_url) ? (
-                                        <img src={logoFilePreview || appUrl(companyForm.data.logo_image_url)} alt="Logo" className="h-7 max-w-[130px] object-contain" />
-                                    ) : (
-                                        <>
-                                            {companyForm.data.logo_text_prefix || 'Loops'}{' '}
-                                            <span className="text-[#14f1d9]">{companyForm.data.logo_text_suffix || 'Integrated'}</span>
-                                        </>
-                                    )}
-                                </div>
-                                <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mt-1 inline-block">
-                                    Admin Suite
-                                </span>
-                            </div>
+                            )}
                         </div>
 
                         {/* Mobile close button */}
