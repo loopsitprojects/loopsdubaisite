@@ -1,3 +1,5 @@
+DirectoryIndex public/index.php index.php
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
@@ -7,6 +9,9 @@
     # Block access to hidden or sensitive files
     RewriteRule (^|/)\.(?!well-known) - [F,L]
     RewriteRule \.(env|json|lock|sql|md|yml|yaml|xml|bak|swp)$ - [F,L,NC]
+
+    # Ensure empty root rewrites directly to public/index.php
+    RewriteRule ^$ public/index.php [L]
 
     # Rewrite all traffic into the public/ directory front controller
     RewriteCond %{REQUEST_URI} !^/public/
