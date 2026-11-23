@@ -14,7 +14,12 @@ use App\Models\ContactSetting;
 use App\Models\HomeSection;
 use App\Models\StoryboardFrame;
 use App\Models\Office;
+use App\Models\CompanySetting;
+use App\Models\User;
+use App\Mail\NewInquiryNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -132,7 +137,7 @@ class HomeController extends Controller
             'message' => 'nullable|string|max:2000',
         ]);
 
-        Booking::create([
+        $booking = Booking::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
@@ -142,6 +147,20 @@ class HomeController extends Controller
             'message' => $validated['message'] ?? '',
             'status' => 'new',
         ]);
+
+        // Send email notification to Admin if mail is configured
+        $recipientEmail = config('mail.to_address')
+            ?: env('MAIL_TO_ADDRESS')
+            ?: CompanySetting::first()?->email
+            ?: User::first()?->email;
+
+        if ($recipientEmail && config('mail.default') !== 'log') {
+            try {
+                Mail::to($recipientEmail)->send(new NewInquiryNotification($booking));
+            } catch (\Throwable $e) {
+                Log::error('Failed to send new inquiry email notification: ' . $e->getMessage());
+            }
+        }
 
         return back()->with('success', 'Thank you! Your creative call request has been received. Our team will reach out within 24 hours.');
     }
