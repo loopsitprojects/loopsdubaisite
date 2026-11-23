@@ -17,14 +17,6 @@ export default function Login() {
         post(appUrl('/admin/login'));
     };
 
-    const fillDemoAdmin = () => {
-        setData({
-            email: 'admin@loopsdubai.com',
-            password: 'password123',
-            remember: true,
-        });
-    };
-
     return (
         <div className="min-h-screen bg-[#090a0d] text-white flex flex-col justify-center items-center p-6 selection:bg-[#14f1d9] selection:text-black">
             <Head title="Admin Login — Loops Integrated" />
@@ -113,13 +105,6 @@ export default function Login() {
                                 />
                                 <span>Remember me</span>
                             </label>
-                            <button
-                                type="button"
-                                onClick={fillDemoAdmin}
-                                className="text-[#14f1d9] hover:underline cursor-pointer"
-                            >
-                                Fill Default Admin
-                            </button>
                         </div>
 
                         <button
@@ -137,10 +122,6 @@ export default function Login() {
                             )}
                         </button>
                     </form>
-                </div>
-
-                <div className="text-center mt-6 text-xs text-neutral-500">
-                    Default credentials: <span className="text-neutral-300 font-mono">admin@loopsdubai.com</span> / <span className="text-neutral-300 font-mono">password123</span>
                 </div>
             </div>
         </div>

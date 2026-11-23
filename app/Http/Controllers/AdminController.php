@@ -1033,4 +1033,33 @@ class AdminController extends Controller
 
         return back()->with('success', 'Section visibility settings saved successfully.');
     }
+
+    /**
+     * Update admin user credentials (username, email, password).
+     */
+    public function updateSecurity(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'current_password' => 'nullable|string',
+            'new_password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
+        if (!empty($validated['new_password'])) {
+            if (empty($validated['current_password']) || !\Illuminate\Support\Facades\Hash::check($validated['current_password'], $user->password)) {
+                return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+            }
+            $user->password = \Illuminate\Support\Facades\Hash::make($validated['new_password']);
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Admin credentials updated successfully!');
+    }
 }

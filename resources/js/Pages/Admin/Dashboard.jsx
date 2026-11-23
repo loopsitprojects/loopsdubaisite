@@ -42,7 +42,10 @@ import {
     EyeOff,
     Globe,
     AlertTriangle,
-    RotateCcw
+    RotateCcw,
+    KeyRound,
+    Lock,
+    ShieldCheck
 } from 'lucide-react';
 import { getFilmThumbnail, isDirectVideo, parseVideoUrl } from '../../utils/video';
 
@@ -653,6 +656,29 @@ export default function Dashboard({
         });
     };
 
+    // Form for Admin Account & Security Settings
+    const securityForm = useForm({
+        name: auth?.user?.name || 'Administrator',
+        email: auth?.user?.email || 'admin@loopsdubai.com',
+        current_password: '',
+        new_password: '',
+        new_password_confirmation: '',
+    });
+
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const handleSecuritySubmit = (e) => {
+        e.preventDefault();
+        securityForm.post(appUrl('/admin/security'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                securityForm.reset('current_password', 'new_password', 'new_password_confirmation');
+            },
+        });
+    };
+
     // Form for Hero Section CMS
     const heroForm = useForm({
         badge_tag_1: hero?.badge_tag_1 || 'AI-generated',
@@ -978,6 +1004,7 @@ export default function Dashboard({
         { id: 'leads', label: 'Inquiries CRM', icon: Mail, badge: stats?.new_bookings > 0 ? stats.new_bookings : null, badgeColor: 'orange' },
         { id: 'brands', label: 'Brand Partners', icon: ImageIcon, badge: brandLogos.length },
         { id: 'company', label: 'Company Details & Logo', icon: Building2, badge: null },
+        { id: 'security', label: 'Admin Settings & Security', icon: KeyRound, badge: null },
     ];
 
     return (
@@ -1164,14 +1191,32 @@ export default function Dashboard({
                 {/* Sidebar Bottom Profile & Logout */}
                 <div className="p-4 border-t border-white/10 bg-[#090b0e]">
                     <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                            <div className="text-xs font-bold text-white truncate">
+                        <button
+                            type="button"
+                            onClick={() => { setActiveTab('security'); setMobileSidebarOpen(false); }}
+                            className="min-w-0 flex-1 text-left group p-1 -m-1 rounded-lg hover:bg-white/5 transition"
+                            title="Admin Account Settings"
+                        >
+                            <div className="text-xs font-bold text-white truncate group-hover:text-[#14f1d9] transition">
                                 {auth?.user?.name || 'Administrator'}
                             </div>
                             <div className="text-[11px] text-neutral-400 truncate font-mono">
                                 {auth?.user?.email || 'admin@loopsdubai.com'}
                             </div>
-                        </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => { setActiveTab('security'); setMobileSidebarOpen(false); }}
+                            title="Account Settings & Security"
+                            className={`p-2 rounded-lg transition cursor-pointer ${
+                                activeTab === 'security'
+                                    ? 'text-[#14f1d9] bg-[#14f1d9]/10'
+                                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                            }`}
+                        >
+                            <KeyRound size={15} />
+                        </button>
 
                         <button
                             onClick={handleLogout}
@@ -4912,6 +4957,197 @@ export default function Dashboard({
                                     >
                                         <Save size={16} />
                                         <span>{companyForm.processing ? 'Saving Changes...' : 'Save Company Details'}</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* TAB: Admin Account & Security Settings */}
+                    {activeTab === 'security' && (
+                        <div className="space-y-8 animate-fadeIn">
+                            {/* Header Banner */}
+                            <div className="bg-[#101217] border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xl">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#14f1d9] animate-pulse"></div>
+                                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#14f1d9]">Master Account</span>
+                                    </div>
+                                    <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                                        Admin Settings & Security
+                                    </h2>
+                                    <p className="text-neutral-400 text-xs sm:text-sm mt-1">
+                                        Update your administrator login username (email) and password credentials.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleSecuritySubmit} className="space-y-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* CARD 1: Identity & Username */}
+                                    <div className="bg-[#101217] border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                                        <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+                                            <div className="w-10 h-10 rounded-xl bg-[#14f1d9]/10 text-[#14f1d9] border border-[#14f1d9]/20 flex items-center justify-center shrink-0">
+                                                <UserCheck size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                                                    Account Identity
+                                                </h3>
+                                                <p className="text-xs text-neutral-400">
+                                                    Your display name and login email address
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-300 mb-2">
+                                                    Administrator Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={securityForm.data.name}
+                                                    onChange={(e) => securityForm.setData('name', e.target.value)}
+                                                    placeholder="Administrator"
+                                                    className="w-full px-4 py-3 rounded-xl bg-[#090b0e] border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-[#14f1d9] transition"
+                                                />
+                                                {securityForm.errors.name && (
+                                                    <p className="text-xs text-rose-400 mt-1.5">{securityForm.errors.name}</p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-300 mb-2">
+                                                    Login Username / Email
+                                                </label>
+                                                <div className="relative">
+                                                    <Mail size={16} className="absolute left-3.5 top-3.5 text-neutral-500" />
+                                                    <input
+                                                        type="email"
+                                                        required
+                                                        value={securityForm.data.email}
+                                                        onChange={(e) => securityForm.setData('email', e.target.value)}
+                                                        placeholder="admin@loopsdubai.com"
+                                                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#090b0e] border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-[#14f1d9] transition font-mono"
+                                                    />
+                                                </div>
+                                                <p className="text-[11px] text-neutral-500 mt-1.5">
+                                                    This email address is your login username to access the admin dashboard.
+                                                </p>
+                                                {securityForm.errors.email && (
+                                                    <p className="text-xs text-rose-400 mt-1.5">{securityForm.errors.email}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* CARD 2: Password Management */}
+                                    <div className="bg-[#101217] border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                                        <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+                                            <div className="w-10 h-10 rounded-xl bg-[#14f1d9]/10 text-[#14f1d9] border border-[#14f1d9]/20 flex items-center justify-center shrink-0">
+                                                <Lock size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                                                    Change Password
+                                                </h3>
+                                                <p className="text-xs text-neutral-400">
+                                                    Leave blank to keep your current password
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-300 mb-2">
+                                                    Current Password
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showCurrentPassword ? 'text' : 'password'}
+                                                        value={securityForm.data.current_password}
+                                                        onChange={(e) => securityForm.setData('current_password', e.target.value)}
+                                                        placeholder="Required only when changing password"
+                                                        className="w-full pl-4 pr-11 py-3 rounded-xl bg-[#090b0e] border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-[#14f1d9] transition"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                        className="absolute right-3.5 top-3.5 text-neutral-500 hover:text-white transition"
+                                                    >
+                                                        {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                    </button>
+                                                </div>
+                                                {securityForm.errors.current_password && (
+                                                    <p className="text-xs text-rose-400 mt-1.5">{securityForm.errors.current_password}</p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-300 mb-2">
+                                                    New Password
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showNewPassword ? 'text' : 'password'}
+                                                        value={securityForm.data.new_password}
+                                                        onChange={(e) => securityForm.setData('new_password', e.target.value)}
+                                                        placeholder="Minimum 8 characters"
+                                                        className="w-full pl-4 pr-11 py-3 rounded-xl bg-[#090b0e] border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-[#14f1d9] transition"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                                        className="absolute right-3.5 top-3.5 text-neutral-500 hover:text-white transition"
+                                                    >
+                                                        {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                    </button>
+                                                </div>
+                                                {securityForm.errors.new_password && (
+                                                    <p className="text-xs text-rose-400 mt-1.5">{securityForm.errors.new_password}</p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-300 mb-2">
+                                                    Confirm New Password
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showConfirmPassword ? 'text' : 'password'}
+                                                        value={securityForm.data.new_password_confirmation}
+                                                        onChange={(e) => securityForm.setData('new_password_confirmation', e.target.value)}
+                                                        placeholder="Re-enter new password"
+                                                        className="w-full pl-4 pr-11 py-3 rounded-xl bg-[#090b0e] border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-[#14f1d9] transition"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute right-3.5 top-3.5 text-neutral-500 hover:text-white transition"
+                                                    >
+                                                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Bottom Sticky Save Bar */}
+                                <div className="bg-[#101217] border border-white/10 rounded-2xl p-5 sm:p-6 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="text-xs text-neutral-400">
+                                        Once saved, you can log in with your new email and password on the login screen.
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={securityForm.processing}
+                                        className="cursor-pointer bg-[#14f1d9] hover:bg-[#12dac4] text-black font-bold text-xs sm:text-sm px-8 py-3.5 rounded-full flex items-center justify-center gap-2 transition shadow-[0_0_25px_rgba(20,241,217,0.35)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                    >
+                                        <Save size={16} />
+                                        <span>{securityForm.processing ? 'Saving Changes...' : 'Save Account Settings'}</span>
                                     </button>
                                 </div>
                             </form>

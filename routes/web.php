@@ -81,4 +81,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     // Contact Page CMS
     Route::post('/contact-settings', [AdminController::class, 'updateContactSetting'])->name('admin.contactSetting.update');
+
+    // Admin Account & Security Settings
+    Route::post('/security', [AdminController::class, 'updateSecurity'])->name('admin.security.update');
 });
